@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>intent_comm_hri_vendor</name>
+  <version>0.0.1</version>
+  <description>Vendors the Intent-Communication-HRI python modules (e.g., iLQGame) into ROS2.</description>
+
+  <maintainer email="you@todo.com">you</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- Minimal runtime deps; iLQGame itself imports numpy/jax/scipy in your venv -->
+  <exec_depend>rclpy</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
+

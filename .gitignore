@@ -1,0 +1,38 @@
+# --- ROS2 / colcon ---
+build/
+install/
+log/
+*.pyc
+__pycache__/
+*.pyo
+
+# --- Virtualenvs ---
+.venv/
+.venv_ros/
+venv/
+.env/
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- OS ---
+.DS_Store
+
+# --- Outputs / rollouts ---
+rollouts/
+*.gif
+*.png
+*.pdf
+
+# --- JAX / cache ---
+.cache/
+**/.cache/
+
+# --- Misc ---
+tmp/
+*.bag
+*.db
+
