@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
-
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  set -e
-fi
-
+set -e
 
 WS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
