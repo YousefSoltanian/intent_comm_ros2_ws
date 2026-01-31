@@ -35,6 +35,7 @@ setup(
 	"hl_downsample = intent_comm_nav_ros.nodes.hl_downsample_node:main",
     	"nav_rollout_recorder = intent_comm_nav_ros.nodes.nav_rollout_recorder_node:main",
     	'high_level_robot_runner = intent_comm_nav_ros.nodes.high_level_robot_runner_node:main',
+    	"mqtt_bridge = intent_comm_nav_ros.nodes.mqtt_bridge_node:main",
 
     ],
 },
