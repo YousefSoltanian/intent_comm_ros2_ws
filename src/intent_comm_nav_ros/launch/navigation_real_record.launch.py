@@ -31,8 +31,8 @@ def generate_launch_description():
         "theta_r_true": 0,
 
         # goals (human goes to +4, robot goes to -4)
-        "goals_h_flat": [4.0, 1.6, 4.0, -1.6],
-        "goals_r_flat": [-4.0, 1.6, -4.0, -1.6],
+        "goals_h_flat": [2.0, 1.6, 2.0, -1.6],
+        "goals_r_flat": [-2.0, 1.6, -2.0, -1.6],
 
         # costs / weights
         "w_goal_pos": 60.0,
