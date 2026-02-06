@@ -81,7 +81,7 @@ class MQTTBridgeNode(Node):
 
         # Bounds parameters (x, y position limits)
         self.x_min = float(self.declare_parameter("x_min", -2.0).value)
-        self.x_max = float(self.declare_parameter("x_max", 3.0).value)
+        self.x_max = float(self.declare_parameter("x_max", 2.0).value)
         self.y_min = float(self.declare_parameter("y_min", -1.0).value)
         self.y_max = float(self.declare_parameter("y_max", 1.0).value)
 
@@ -181,7 +181,7 @@ class MQTTBridgeNode(Node):
         """MQTT message callback."""
         try:
             payload = json.loads(msg.payload.decode("utf-8"))
-            self.get_logger().info(f"Received MQTT message on {msg.topic}: {payload}")
+            # self.get_logger().info(f"Received MQTT message on {msg.topic}: {payload}")
 
             # Determine target publisher based on topic
             if msg.topic == self.mqtt_topic_human:
@@ -218,11 +218,6 @@ class MQTTBridgeNode(Node):
                 x = float(pos.get("x"))
                 y = float(pos.get("y"))
                 z = float(pos.get("z", 0.0))
-            else:
-                # Support flat format: payload["x"]
-                x = float(payload.get("x"))
-                y = float(payload.get("y"))
-                z = float(payload.get("z", 0.0))
 
             if "orientation" in payload and isinstance(payload["orientation"], dict):
                 ori = payload["orientation"]
@@ -230,12 +225,7 @@ class MQTTBridgeNode(Node):
                 qy = float(ori.get("y"))
                 qz = float(ori.get("z"))
                 qw = float(ori.get("w"))
-            else:
-                # Support flat format: payload["qx"], payload["qw"]
-                qx = float(payload.get("qx"))
-                qy = float(payload.get("qy"))
-                qz = float(payload.get("qz"))
-                qw = float(payload.get("qw"))
+       
 
             # Timestamp: your publisher uses "t" as float unix seconds
             if "t" in payload:

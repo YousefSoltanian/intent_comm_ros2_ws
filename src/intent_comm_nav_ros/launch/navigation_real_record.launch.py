@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import EmitEvent, RegisterEventHandler, DeclareLaunchArgument
+from launch.actions import EmitEvent, RegisterEventHandler, DeclareLaunchArgument, TimerAction
 from launch.event_handlers import OnProcessExit
 from launch.events import Shutdown
 from launch.substitutions import LaunchConfiguration
@@ -31,19 +31,21 @@ def generate_launch_description():
         "theta_r_true": 0,
 
         # goals (human goes to +4, robot goes to -4)
-        "goals_h_flat": [2.0, 1.6, 2.0, -1.6],
-        "goals_r_flat": [-2.0, 1.6, -2.0, -1.6],
+        # "goals_h_flat": [0.7, -1.6, -0.7, -1.6],
+        # "goals_r_flat": [0.7, 1.6, -0.7, 1.6],
+        "goals_h_flat": [1.6, 0.7, 1.6, -0.7],
+        "goals_r_flat": [-1.6, 0.9, -1.6, -0.9],
 
         # costs / weights
         "w_goal_pos": 60.0,
         "w_head": 10.108,
         "w_speed": 0.0,
-        "w_eff": 500.08,
+        "w_eff": 100.08,
         "v_nom": 0.9,
 
         "w_lat": 0.2,
         "w_wall": 100.0,
-        "w_coll": 20.0,
+        "w_coll": 0.0,
         "r_safe_coll": 3.0,
 
         # corridor
@@ -103,6 +105,8 @@ def generate_launch_description():
         "max_v": 2.0,
         "max_w": 1.0,
     }
+    
+    DURATION_S = 120.0
 
     # MQTT Bridge Node (replaces mocap_noiser_agent nodes for real experiments)
     mqtt_bridge = Node(
@@ -151,6 +155,9 @@ def generate_launch_description():
             "output_rpy_topic": "/mocap/robot/rpy",
         }],
     )
+    
+    MOCAP_H_TOPIC="/mocap/human/pose"
+    MOCAP_R_TOPIC="/mocap/robot/pose"
 
     ekf_stack = Node(
         package="intent_comm_nav_ros",
@@ -177,9 +184,9 @@ def generate_launch_description():
             "freeze_vel_cov": EKF["freeze_vel_cov"],
             "max_v": EKF["max_v"],
             "max_w": EKF["max_w"],
-
-            "topic_h_pose": "/mocap/human/pose",
-            "topic_r_pose": "/mocap/robot/pose",
+            
+            "topic_h_pose": MOCAP_H_TOPIC,
+            "topic_r_pose": MOCAP_R_TOPIC,
             "topic_x_hat": "/ekf/stacked_state",
             "topic_h_u_est": "/ekf/human/u_est",
             "topic_r_u_est": "/ekf/robot/u_est",
@@ -211,15 +218,16 @@ def generate_launch_description():
         # IMPORTANT: use bridge output
         "topic_x_hat": "/hl/x_hat",
         "topic_h_u_obs": "/hl/human/u_obs",
-        "topic_r_u_obs": "/hl/robot/u_obs",
-        "topic_h_cmd": "/human/cmd_vel",
+        # "topic_r_u_obs": "/hl/robot/u_obs",
+        # "topic_h_cmd": "/human/cmd_vel",
         "topic_r_cmd": "/robot/cmd_vel",
+        "max_runtime_s": DURATION_S,
     })
 
     high_level_runner = Node(
         package="intent_comm_nav_ros",
-        executable="high_level_runner",
-        name="high_level_runner",
+        executable="high_level_robot_runner",
+        name="high_level_robot_runner",
         output="screen",
         parameters=[runner_params],
     )
@@ -230,14 +238,14 @@ def generate_launch_description():
         "trial_id": ParameterValue(trial_id, value_type=int),
 
         # recorder config
-        "duration_s": 15.0,
+        "duration_s": DURATION_S,
         "plot_dt": 0.02,
         "gif_stride": 10,
         "out_dir": out_dir,
 
         # topics
-        "topic_truth_h": "/truth/human/pose",
-        "topic_truth_r": "/truth/robot/pose",
+        "topic_truth_h": MOCAP_H_TOPIC,
+        "topic_truth_r": MOCAP_R_TOPIC,
         "topic_cmd_h": "/human/cmd_vel",
         "topic_cmd_r": "/robot/cmd_vel",
         "topic_u_est_h": "/ekf/human/u_est",
@@ -270,6 +278,12 @@ def generate_launch_description():
             on_exit=[EmitEvent(event=Shutdown(reason="Recorder finished"))],
         )
     )
+    
+     # Extra hard shutdown even if recorder doesn’t exit (belt & suspenders)
+    hard_shutdown = TimerAction(
+        period=DURATION_S + 2.0,
+        actions=[EmitEvent(event=Shutdown(reason="Experiment duration reached"))],
+    )
 
     return LaunchDescription([
         DeclareLaunchArgument("controller", default_value="npace"),
@@ -283,5 +297,6 @@ def generate_launch_description():
         high_level_runner,
         recorder,
         shutdown_on_recorder_exit,
+        hard_shutdown
     ])
 
