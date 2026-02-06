@@ -30,6 +30,14 @@ def _u_array_msg_to_u(msg: Float32MultiArray) -> np.ndarray:
         u = u[:2]
     return u
 
+def _u_array_msg_to_vec(msg: Float32MultiArray, n: int) -> np.ndarray:
+    v = np.asarray(msg.data, dtype=np.float32).reshape(-1)
+    if v.size < n:
+        v = np.pad(v, (0, n - v.size))
+    else:
+        v = v[:n]
+    return v
+
 
 @dataclass
 class Series:
@@ -117,6 +125,7 @@ class NavRolloutRecorderNode(Node):
 
         self.topic_u_est_h = str(self.declare_parameter("topic_u_est_h", "/ekf/human/u_est").value)
         self.topic_u_est_r = str(self.declare_parameter("topic_u_est_r", "/ekf/robot/u_est").value)
+        self.topic_p_est = str(self.declare_parameter("topic_p_est", "/ekf/stacked_state").value)
 
         self.topic_u_obs_h = str(self.declare_parameter("topic_u_obs_h", "/hl/human/u_obs").value)
         self.topic_u_obs_r = str(self.declare_parameter("topic_u_obs_r", "/hl/robot/u_obs").value)
@@ -148,6 +157,7 @@ class NavRolloutRecorderNode(Node):
         self.cmd_r = Series([], [])
         self.u_est_h = Series([], [])
         self.u_est_r = Series([], [])
+        self.p_est = Series([], [])
         self.u_obs_h = Series([], [])
         self.u_obs_r = Series([], [])
         self.p_true_h = Series([], [])
@@ -162,6 +172,7 @@ class NavRolloutRecorderNode(Node):
 
         self.create_subscription(Float32MultiArray, self.topic_u_est_h, self._on_u_est_h, 50)
         self.create_subscription(Float32MultiArray, self.topic_u_est_r, self._on_u_est_r, 50)
+        self.create_subscription(Float32MultiArray, self.topic_p_est, self._on_p_est, 50)
 
         self.create_subscription(Twist, self.topic_u_obs_h, self._on_u_obs_h, 50)
         self.create_subscription(Twist, self.topic_u_obs_r, self._on_u_obs_r, 50)
@@ -205,7 +216,7 @@ class NavRolloutRecorderNode(Node):
         for s in [
             self.truth_h, self.truth_r, self.cmd_h, self.cmd_r,
             self.u_est_h, self.u_est_r, self.u_obs_h, self.u_obs_r,
-            self.p_true_h, self.p_true_r, self.bel_h, self.bel_r
+            self.p_true_h, self.p_true_r, self.bel_h, self.bel_r, self.p_est
         ]:
             s.t.clear()
             s.y.clear()
@@ -247,6 +258,10 @@ class NavRolloutRecorderNode(Node):
     def _on_u_est_r(self, msg: Float32MultiArray) -> None:
         self._mark_first("u_est_r")
         self.u_est_r.add(self._t(), _u_array_msg_to_u(msg))
+
+    def _on_p_est(self, msg: Float32MultiArray) -> None:
+        self._mark_first("p_est")
+        self.p_est.add(self._t(), _u_array_msg_to_vec(msg, 6))
 
     def _on_u_obs_h(self, msg: Twist) -> None:
         self._mark_first("u_obs_h")
@@ -305,6 +320,8 @@ class NavRolloutRecorderNode(Node):
         idx_r_true = _safe_intent_index(self.intents_r, self.theta_r_true)
         idx_h_true = _safe_intent_index(self.intents_h, self.theta_h_true)
 
+        t_pe, y_pe = self.p_est.as_arrays()
+
         if y_bh.size > 0 and y_bh.ndim == 2 and y_bh.shape[1] > idx_r_true:
             t_pth, y_pth = t_bh, y_bh[:, idx_r_true:idx_r_true + 1]
         else:
@@ -324,6 +341,12 @@ class NavRolloutRecorderNode(Node):
             t_ptr, y_ptr, ts,
             y0=np.array([self.ptrue_default], dtype=np.float32),
             nan_before_first=False
+        )
+
+        Pest = _zoh_resample(
+            t_pe, y_pe, ts,
+            y0=np.zeros((6,), dtype=np.float32),
+            nan_before_first=True
         )
 
         np.savez(
@@ -349,7 +372,9 @@ class NavRolloutRecorderNode(Node):
         self._plot_xy(H, R)
         self._plot_controls(ts, CmdH, CmdR, UestH, UestR, UobsH, UobsR)
         self._plot_beliefs(ts, PtrueH, PtrueR)
+        self._plot_estimated_and_observed_positions(ts, H, R, Pest)
         self._make_gif(ts, H, R)
+
 
         self.get_logger().info(f"[Recorder] first_seen={self.first_seen}")
         self.get_logger().info(
@@ -380,6 +405,34 @@ class NavRolloutRecorderNode(Node):
         ax.legend()
         fig.tight_layout()
         fig.savefig(f"{self.base}_xy.png")
+        plt.close(fig)
+
+    def _plot_estimated_and_observed_positions(self, ts, H, R, p_est) -> None:
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(10, 7), dpi=160)
+
+        ax1 = fig.add_subplot(2, 1, 1)
+        ax1.plot(ts, H[:, 0], color="red", label="human mocap x")
+        ax1.plot(ts, R[:, 0], color="blue", label="robot mocap x")
+        ax1.plot(ts, p_est[:, 0], "--", color="red", label="human estimated x")
+        ax1.plot(ts, p_est[:, 3], "--", color="blue", label="robot estimated x")
+        ax1.grid(alpha=0.3)
+        ax1.set_xlabel("t [s]")
+        ax1.set_ylabel("x [m]")
+        ax1.legend()
+
+        ax2 = fig.add_subplot(2, 1, 2)
+        ax2.plot(ts, H[:, 1], color="red", label="human mocap y")
+        ax2.plot(ts, R[:, 1], color="blue", label="robot mocap y")
+        ax2.plot(ts, p_est[:, 1], "--", color="red", label="human estimated y")
+        ax2.plot(ts, p_est[:, 4], "--", color="blue", label="robot estimated y")
+        ax2.grid(alpha=0.3)
+        ax2.set_xlabel("t [s]")
+        ax2.set_ylabel("y [m]")
+        ax2.legend()
+
+        fig.tight_layout()
+        fig.savefig(f"{self.base}_estimated_and_observed_positions.png")
         plt.close(fig)
 
     def _plot_controls(self, ts, CmdH, CmdR, UestH, UestR, UobsH, UobsR) -> None:
