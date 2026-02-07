@@ -238,7 +238,7 @@ def generate_launch_description():
         "trial_id": ParameterValue(trial_id, value_type=int),
 
         # recorder config
-        "duration_s": DURATION_S,
+        "duration_s": 10.0,
         "plot_dt": 0.02,
         "gif_stride": 10,
         "out_dir": out_dir,
@@ -279,7 +279,7 @@ def generate_launch_description():
         )
     )
     
-     # Extra hard shutdown even if recorder doesn’t exit (belt & suspenders)
+    #  Extra hard shutdown even if recorder doesn’t exit (belt & suspenders)
     hard_shutdown = TimerAction(
         period=DURATION_S + 2.0,
         actions=[EmitEvent(event=Shutdown(reason="Experiment duration reached"))],
