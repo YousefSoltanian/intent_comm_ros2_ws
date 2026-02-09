@@ -2,7 +2,8 @@
 
 This guide explains how to build and run the intent_comm_ros2_ws workspace using Docker.
 
-## Run container: 
+## Run container: docker run -it --rm --net=host -v $(pwd)/rollouts:/ws/rollouts 1braheem/intent-comm-ros2:latest
+
 ```bash
 docker run -it --rm --net=host -v $(pwd)/rollouts:/ws/rollouts 1braheem/intent-comm-ros2:latest
 ```

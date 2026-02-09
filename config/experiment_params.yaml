@@ -1,0 +1,175 @@
+# config/experiment_params.yaml
+mqtt_bridge:
+  ros__parameters:
+    mqtt_broker: "localhost"
+    mqtt_port: 1883
+    mqtt_client_id: "ros2_mqtt_bridge"
+    mqtt_keepalive: 60
+    mqtt_reconnect_max_delay: 60
+    mqtt_topic_human: "robot/pose/human"
+    mqtt_topic_robot: "robot/pose/robot"
+    ros_topic_human: "/mocap/human/pose"
+    ros_topic_robot: "/mocap/robot/pose"
+
+ekf_stack:
+  ros__parameters:
+    ekf_rate: 100.0
+
+    p0_xy: 1.0
+    p0_th: 1.0
+    p0_v: 2.0
+    p0_w: 2.0
+
+    q_xy: 1e-6
+    q_th: 1e-6
+    q_v: 1e-4
+    q_w: 1e-4
+
+    r_xy: 1e-4
+    r_th: 1e-3
+
+    freeze_vel_s: 0.5
+    freeze_vel_cov: 1e-4
+    max_v: 2.0
+    max_w: 1.0
+
+    topic_h_pose: "/mocap/human/pose"
+    topic_r_pose: "/mocap/robot/pose"
+    topic_x_hat: "/ekf/stacked_state"
+    topic_h_u_est: "/ekf/human/u_est"
+    topic_r_u_est: "/ekf/robot/u_est"
+
+high_level_bridge:
+  ros__parameters:
+    dt_hl: 0.5
+    x_hat_in_topic: "/ekf/stacked_state"
+    human_u_est_topic: "/ekf/human/u_est"
+    robot_u_est_topic: "/ekf/robot/u_est"
+    x_hat_topic: "/hl/x_hat"
+    x_hat_prev_topic: "/hl/x_hat_prev"
+    human_u_obs_topic: "/hl/human/u_obs"
+    robot_u_obs_topic: "/hl/robot/u_obs"
+
+high_level_robot_runner:
+  ros__parameters:
+    dt_hl: 0.5
+    horizon: 10
+
+    intents_h:
+      - 0
+      - 1
+    intents_r:
+      - 0
+      - 1
+
+    theta_h_true: 0
+    theta_r_true: 0
+
+    goals_h_flat:
+      - -2.0
+      - 1.0
+      - -2.0
+      - -1.0
+    goals_r_flat:
+      - 1.6
+      - 0.9
+      - 1.6
+      - -0.9
+
+    w_goal_pos: 60.0
+    w_head: 10.108
+    w_speed: 0.0
+    w_eff: 300.08
+    v_nom: 0.9
+
+    w_lat: 0.2
+    w_wall: 100.0
+    w_coll: 20.0
+    r_safe_coll: 3.0
+
+    hall_y0: 0.0
+    hall_half_width: 2.41
+
+    v_lo: 0.0
+    v_hi: 1.2
+    w_lo: -0.6
+    w_hi: 0.6
+
+    max_iter: 25
+    beta_h: 0.1
+    beta_r: 0.1
+    beta_state: 1.1
+    rho_forget: 0.0
+
+    sigma2_state_human_flat:
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.1
+    sigma2_state_robot_flat:
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.1
+      - 0.1
+
+    gamma_teach: 100.0
+    effort_w_qmdp: 0.0
+
+    beta_action_like: 0.1
+    sigma2_action_obs_flat:
+      - 0.1
+      - 0.1
+
+    topic_x_hat: "/hl/x_hat"
+    topic_h_u_obs: "/hl/human/u_obs"
+    topic_r_cmd: "/robot/cmd_vel"
+    max_runtime_s: 120.0
+
+nav_rollout_recorder:
+  ros__parameters:
+    duration_s: 10.0
+    plot_dt: 0.02
+    gif_stride: 10
+    max_gif_frames: 400
+
+    out_dir: "/ws/rollouts"
+
+    topic_truth_h: "/mocap/human/pose"
+    topic_truth_r: "/mocap/robot/pose"
+    topic_cmd_h: "/human/cmd_vel"
+    topic_cmd_r: "/robot/cmd_vel"
+    topic_u_est_h: "/ekf/human/u_est"
+    topic_u_est_r: "/ekf/robot/u_est"
+    topic_u_obs_h: "/hl/human/u_obs"
+    topic_u_obs_r: "/hl/robot/u_obs"
+    topic_belief_h: "/hl/beliefs/human_about_robot"
+    topic_belief_r: "/hl/beliefs/robot_about_human"
+    topic_ready: "/hl/ready"
+
+    intents_h:
+      - 0
+      - 1
+    intents_r:
+      - 0
+      - 1
+
+    theta_h_true: 0
+    theta_r_true: 0
+
+    goals_h_flat:
+      - -1.6
+      - 0.9
+      - -1.6
+      - -0.9
+    goals_r_flat:
+      - 1.6
+      - 0.9
+      - 1.6
+      - -0.9
+
+    subject_name: "yosef"
+    trial_id: 1

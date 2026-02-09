@@ -136,6 +136,8 @@ class NavRolloutRecorderNode(Node):
         self.topic_belief_h = str(self.declare_parameter("topic_belief_h", "/hl/beliefs/human_about_robot").value)
         self.topic_belief_r = str(self.declare_parameter("topic_belief_r", "/hl/beliefs/robot_about_human").value)
         self.topic_ready   = str(self.declare_parameter("topic_ready", "/hl/ready").value)
+        
+        self.subject_name = str(self.declare_parameter("subject_name", "subject_0").value)
 
         self.goals_h = np.asarray(
             self.declare_parameter("goals_h_flat", [4.0, 1.6, 4.0, -1.6]).value,
@@ -185,9 +187,14 @@ class NavRolloutRecorderNode(Node):
         self.create_subscription(Bool, self.topic_ready, self._on_ready, 10)
 
         self.out_dir = out_dir
+        
+        subject = str(self.get_parameter('subject_name').value)
+        out_dir = os.path.join(str(self.get_parameter('out_dir').value), subject, self.controller)
+        os.makedirs(out_dir, exist_ok=True)
+        self.base = os.path.join(out_dir, f"{self.controller}_trial_{self.trial_id}")
 
         # NEW: filenames depend ONLY on controller + trial_id
-        self.base = os.path.join(out_dir, f"{self.controller}_trial_{self.trial_id}")
+        # self.base = os.path.join(out_dir, f"{self.controller}_trial_{self.trial_id}")
 
         self._finished = False
         self.done_timer = None
@@ -233,13 +240,22 @@ class NavRolloutRecorderNode(Node):
 
     def _on_truth_h(self, msg: PoseStamped) -> None:
         self._mark_first("truth_h")
+        new_x = -msg.pose.position.y
+        new_y = msg.pose.position.x
         p = msg.pose.position
+        p.x=new_x
+        p.y = new_y
+        
         yaw = _quat_to_yaw(msg.pose.orientation)
         self.truth_h.add(self._t(), np.array([p.x, p.y, yaw], dtype=np.float32))
 
     def _on_truth_r(self, msg: PoseStamped) -> None:
         self._mark_first("truth_r")
+        new_x = -msg.pose.position.y
+        new_y = msg.pose.position.x
         p = msg.pose.position
+        p.x=new_x
+        p.y=new_y
         yaw = _quat_to_yaw(msg.pose.orientation)
         self.truth_r.add(self._t(), np.array([p.x, p.y, yaw], dtype=np.float32))
 

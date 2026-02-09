@@ -97,7 +97,9 @@ class EKFStackNode(Node):
         super().__init__("ekf_stack")
 
         self.declare_parameter("ekf_rate", 60.0)
-
+        self.get_logger().info("*********************** EKF Rate")
+        self.get_logger().info(str(self.get_parameter("ekf_rate").value))
+                
         # Covariances (variances, not std)
         self.declare_parameter("p0_xy", 0.5)
         self.declare_parameter("p0_th", 0.5)

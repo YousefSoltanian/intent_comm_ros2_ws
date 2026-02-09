@@ -9,25 +9,21 @@ services:
     container_name: intent-comm-ros2
     stdin_open: true
     tty: true
-    
-    # Port mappings
     ports:
-      - "1883:1883"    # MQTT broker
-      - "7400:7400/udp"  # ROS 2 DDS discovery (optional)
-    
-    # Environment variables
+      - "1883:1883"
+      - "7400:7400/udp"
     environment:
       - DISPLAY=${DISPLAY}
-      - CONTROLLER=npace
-      - TRIAL_ID=0
-    
+      - CONTROLLER=${CONTROLLER:-npace}
+      - TRIAL_ID=${TRIAL_ID:-0}
+      - SUBJECT_NAME=${SUBJECT_NAME:-subject_0}
     volumes:
-      # Mount X11 socket for GUI (Linux only)
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      # Mount rollouts directory for output
       - ./rollouts:/ws/rollouts
-      # Uncomment to mount source for development
-      # - ./src:/ws/src
-    
-    # Uncomment if you need network access or specific capabilities
-    # network_mode: host
+      - ./config:/ws/config:ro
+    command: >
+      ros2 launch intent_comm_nav_ros experiment.launch.py
+        controller:=${CONTROLLER}
+        trial_id:=${TRIAL_ID}
+        subject_name:=${SUBJECT_NAME}
+        params_file:=/ws/config/experiment_params.yaml

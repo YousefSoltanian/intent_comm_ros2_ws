@@ -33,7 +33,7 @@ from dataclasses import dataclass
 import paho.mqtt.client as mqtt
 
 
-def yaw_to_quat(yaw: float):
+def yaw_to_quat(yaw):
     """Planar yaw-only quaternion (x,y,z,w)."""
     h = 0.5 * yaw
     return 0.0, 0.0, math.sin(h), math.cos(h)
@@ -47,7 +47,7 @@ class AgentState:
     yaw0: float
 
 
-def make_pose_payload(x: float, y: float, z: float, yaw: float, frame_id: str):
+def make_pose_payload(x, y, z: float, yaw: float, frame_id: str):
     qx, qy, qz, qw = yaw_to_quat(yaw)
     return {
         "position": {"x": float(x), "y": float(y), "z": float(z)},

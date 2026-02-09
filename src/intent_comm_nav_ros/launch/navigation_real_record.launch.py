@@ -1,3 +1,4 @@
+# launch/experiment.launch.py
 from launch import LaunchDescription
 from launch.actions import EmitEvent, RegisterEventHandler, DeclareLaunchArgument, TimerAction
 from launch.event_handlers import OnProcessExit
@@ -7,190 +8,56 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 import os
 
-
 def generate_launch_description():
-    # Only CLI inputs allowed
+    # CLI inputs allowed
     controller = LaunchConfiguration("controller")
     trial_id = LaunchConfiguration("trial_id")
+    subject_name = LaunchConfiguration("subject_name")
+    params_file = LaunchConfiguration("params_file")  # path to YAML on the container
 
-    out_dir = os.path.join(os.getcwd(), "rollouts")
+    # default out_dir; will be combined with subject and trial for per-run folder
+    base_out_dir = os.path.join(os.getcwd(), "rollouts")
 
-    # -----------------------
-    # EDIT THESE MANUALLY ONLY
-    # (defaults match your current code)
-    # -----------------------
-    EXP = {
-        # controller timing
-        "dt_hl": 0.5,
-        "horizon": 10,
-
-        # intents + true indices
-        "intents_h": [0, 1],
-        "intents_r": [0, 1],
-        "theta_h_true": 0,
-        "theta_r_true": 0,
-
-        # goals (human goes to +4, robot goes to -4)
-        # "goals_h_flat": [0.7, -1.6, -0.7, -1.6],
-        # "goals_r_flat": [0.7, 1.6, -0.7, 1.6],
-        "goals_h_flat": [1.6, 0.7, 1.6, -0.7],
-        "goals_r_flat": [-1.6, 0.9, -1.6, -0.9],
-
-        # costs / weights
-        "w_goal_pos": 60.0,
-        "w_head": 10.108,
-        "w_speed": 0.0,
-        "w_eff": 100.08,
-        "v_nom": 0.9,
-
-        "w_lat": 0.2,
-        "w_wall": 100.0,
-        "w_coll": 0.0,
-        "r_safe_coll": 3.0,
-
-        # corridor
-        "hall_y0": 0.0,
-        "hall_half_width": 2.41,
-
-        # control limits
-        "v_lo": 0.0,
-        "v_hi": 1.2,
-        "w_lo": -0.6,
-        "w_hi": 0.6,
-
-        # solver/noise
-        "max_iter": 25,
-        "beta_h": 0.1,
-        "beta_r": 0.1,
-        "beta_state": 1.1,
-        "rho_forget": 0.0,
-        "sigma2_state_human_flat": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-        "sigma2_state_robot_flat": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
-
-        # NPACE only
-        "gamma_teach": 100.0,
-        "effort_w_qmdp": 0.0,
-
-        # Blame-Me only
-        "beta_action_like": 0.1,
-        "sigma2_action_obs_flat": [0.1, 0.1],
-    }
-
-    # -----------------------
-    # EDIT THESE MANUALLY ONLY
-    # EKF tuning (defaults match EKFStackNode)
-    # -----------------------
-    EKF = {
-        "ekf_rate": 100.0,
-
-        # initial covariance (variances)
-        "p0_xy": 0.5*2,
-        "p0_th": 0.5*2,
-        "p0_v": 1.0*2,
-        "p0_w": 1.0*2,
-
-        # process noise (variances)
-        "q_xy": 1e-6,
-        "q_th": 1e-6,
-        "q_v": 1e-4,
-        "q_w": 1e-4,
-
-        # measurement noise (variances)
-        "r_xy": 1e-4,
-        "r_th": 1e-3,
-
-        # freeze/clamp
-        "freeze_vel_s": 0.5,
-        "freeze_vel_cov": 1e-4,
-        "max_v": 2.0,
-        "max_w": 1.0,
-    }
-    
+    # Duration (kept as before)
     DURATION_S = 120.0
 
-    # MQTT Bridge Node (replaces mocap_noiser_agent nodes for real experiments)
+    # Topics used by nodes
+    MOCAP_H_TOPIC = "/mocap/human/pose"
+    MOCAP_R_TOPIC = "/mocap/robot/pose"
+
+    # MQTT Bridge — load params from YAML (params_file). YAML keys override these dict values if present.
     mqtt_bridge = Node(
         package="intent_comm_nav_ros",
         executable="mqtt_bridge",
         name="mqtt_bridge",
         output="screen",
-        parameters=[{
-            # MQTT broker configuration
-            "mqtt_broker": "localhost",
-            "mqtt_port": 1883,
-            "mqtt_client_id": "ros2_mqtt_bridge",
-            "mqtt_keepalive": 60,
-            "mqtt_reconnect_max_delay": 60,
-
-            # MQTT topic names (where data comes from)
-            "mqtt_topic_human": "robot/pose/human",
-            "mqtt_topic_robot": "robot/pose/robot",
-
-            # ROS 2 topic names (where data is published)
-            "ros_topic_human": "/mocap/human/pose",
-            "ros_topic_robot": "/mocap/robot/pose",
-        }],
+        parameters=[
+            params_file,
+            {
+                "mqtt_client_id": "ros2_mqtt_bridge",
+                "mqtt_keepalive": 60,
+                "mqtt_reconnect_max_delay": 60,
+                "ros_topic_human": MOCAP_H_TOPIC,
+                "ros_topic_robot": MOCAP_R_TOPIC,
+            },
+        ],
     )
-
-    mocap_pose_to_2d_human = Node(
-        package="intent_comm_nav_ros",
-        executable="mocap_pose_to_2d",
-        name="mocap_human_pose_to_2d",
-        output="screen",
-        parameters=[{
-            "in_topic": "/mocap/human/pose",
-            "output_pose2d_topic": "/mocap/human/pose2d",
-            "output_rpy_topic": "/mocap/human/rpy",
-        }],
-    )
-
-    mocap_pose_to_2d_robot = Node(
-        package="intent_comm_nav_ros",
-        executable="mocap_pose_to_2d",
-        name="mocap_robot_pose_to_2d",
-        output="screen",
-        parameters=[{
-            "in_topic": "/mocap/robot/pose",
-            "output_pose2d_topic": "/mocap/robot/pose2d",
-            "output_rpy_topic": "/mocap/robot/rpy",
-        }],
-    )
-    
-    MOCAP_H_TOPIC="/mocap/human/pose"
-    MOCAP_R_TOPIC="/mocap/robot/pose"
 
     ekf_stack = Node(
         package="intent_comm_nav_ros",
         executable="ekf_stack",
         name="ekf_stack",
         output="screen",
-        parameters=[{
-            "ekf_rate": EKF["ekf_rate"],
-
-            "p0_xy": EKF["p0_xy"],
-            "p0_th": EKF["p0_th"],
-            "p0_v": EKF["p0_v"],
-            "p0_w": EKF["p0_w"],
-
-            "q_xy": EKF["q_xy"],
-            "q_th": EKF["q_th"],
-            "q_v": EKF["q_v"],
-            "q_w": EKF["q_w"],
-
-            "r_xy": EKF["r_xy"],
-            "r_th": EKF["r_th"],
-
-            "freeze_vel_s": EKF["freeze_vel_s"],
-            "freeze_vel_cov": EKF["freeze_vel_cov"],
-            "max_v": EKF["max_v"],
-            "max_w": EKF["max_w"],
-            
-            "topic_h_pose": MOCAP_H_TOPIC,
-            "topic_r_pose": MOCAP_R_TOPIC,
-            "topic_x_hat": "/ekf/stacked_state",
-            "topic_h_u_est": "/ekf/human/u_est",
-            "topic_r_u_est": "/ekf/robot/u_est",
-        }],
+        parameters=[
+            params_file,
+            {
+                "topic_h_pose": MOCAP_H_TOPIC,
+                "topic_r_pose": MOCAP_R_TOPIC,
+                "topic_x_hat": "/ekf/stacked_state",
+                "topic_h_u_est": "/ekf/human/u_est",
+                "topic_r_u_est": "/ekf/robot/u_est",
+            },
+        ],
     )
 
     high_level_bridge = Node(
@@ -198,50 +65,45 @@ def generate_launch_description():
         executable="high_level_bridge",
         name="high_level_bridge",
         output="screen",
-        parameters=[{
-            "dt_hl": EXP["dt_hl"],
-            "x_hat_in_topic": "/ekf/stacked_state",
-            "human_u_est_topic": "/ekf/human/u_est",
-            "robot_u_est_topic": "/ekf/robot/u_est",
-            "x_hat_topic": "/hl/x_hat",
-            "x_hat_prev_topic": "/hl/x_hat_prev",
-            "human_u_obs_topic": "/hl/human/u_obs",
-            "robot_u_obs_topic": "/hl/robot/u_obs",
-        }],
+        parameters=[
+            params_file,
+            {
+                "x_hat_in_topic": "/ekf/stacked_state",
+                "human_u_est_topic": "/ekf/human/u_est",
+                "robot_u_est_topic": "/ekf/robot/u_est",
+                "x_hat_topic": "/hl/x_hat",
+                "x_hat_prev_topic": "/hl/x_hat_prev",
+                "human_u_obs_topic": "/hl/human/u_obs",
+                "robot_u_obs_topic": "/hl/robot/u_obs",
+            },
+        ],
     )
 
-    runner_params = dict(EXP)
-    runner_params.update({
-        # only CLI switch
+    runner_params = {
         "controller": ParameterValue(controller, value_type=str),
-
-        # IMPORTANT: use bridge output
         "topic_x_hat": "/hl/x_hat",
         "topic_h_u_obs": "/hl/human/u_obs",
-        # "topic_r_u_obs": "/hl/robot/u_obs",
-        # "topic_h_cmd": "/human/cmd_vel",
         "topic_r_cmd": "/robot/cmd_vel",
         "max_runtime_s": DURATION_S,
-    })
+    }
 
     high_level_runner = Node(
         package="intent_comm_nav_ros",
         executable="high_level_robot_runner",
         name="high_level_robot_runner",
         output="screen",
-        parameters=[runner_params],
+        parameters=[params_file, runner_params],
     )
 
     recorder_params = {
-        # ONLY identifiers
         "controller": ParameterValue(controller, value_type=str),
         "trial_id": ParameterValue(trial_id, value_type=int),
 
-        # recorder config
+        # recorder config keys: file can override via params_file
+        "out_dir": base_out_dir,
         "duration_s": 10.0,
         "plot_dt": 0.02,
         "gif_stride": 10,
-        "out_dir": out_dir,
 
         # topics
         "topic_truth_h": MOCAP_H_TOPIC,
@@ -254,14 +116,6 @@ def generate_launch_description():
         "topic_u_obs_r": "/hl/robot/u_obs",
         "topic_belief_h": "/hl/beliefs/human_about_robot",
         "topic_belief_r": "/hl/beliefs/robot_about_human",
-
-        # must match EXP (belief indexing + plotting)
-        "intents_h": EXP["intents_h"],
-        "intents_r": EXP["intents_r"],
-        "theta_h_true": EXP["theta_h_true"],
-        "theta_r_true": EXP["theta_r_true"],
-        "goals_h_flat": EXP["goals_h_flat"],
-        "goals_r_flat": EXP["goals_r_flat"],
     }
 
     recorder = Node(
@@ -269,7 +123,10 @@ def generate_launch_description():
         executable="nav_rollout_recorder",
         name="nav_rollout_recorder",
         output="screen",
-        parameters=[recorder_params],
+        parameters=[params_file, recorder_params, {
+            "subject_name": ParameterValue(subject_name, value_type=str),
+            # trial_id already passed above
+        }],
     )
 
     shutdown_on_recorder_exit = RegisterEventHandler(
@@ -278,8 +135,7 @@ def generate_launch_description():
             on_exit=[EmitEvent(event=Shutdown(reason="Recorder finished"))],
         )
     )
-    
-    #  Extra hard shutdown even if recorder doesn’t exit (belt & suspenders)
+
     hard_shutdown = TimerAction(
         period=DURATION_S + 2.0,
         actions=[EmitEvent(event=Shutdown(reason="Experiment duration reached"))],
@@ -288,10 +144,10 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument("controller", default_value="npace"),
         DeclareLaunchArgument("trial_id", default_value="0"),
+        DeclareLaunchArgument("subject_name", default_value="subject_0"),
+        DeclareLaunchArgument("params_file", default_value=os.path.join("/ws", "config", "experiment_params.yaml")),
 
         mqtt_bridge,
-        mocap_pose_to_2d_human,
-        mocap_pose_to_2d_robot,
         ekf_stack,
         high_level_bridge,
         high_level_runner,
@@ -299,4 +155,3 @@ def generate_launch_description():
         shutdown_on_recorder_exit,
         hard_shutdown
     ])
-

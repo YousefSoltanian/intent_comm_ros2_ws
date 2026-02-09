@@ -123,7 +123,7 @@ class RosMqttServer(object):
 
         # ROS pose topics (inputs)
         self.ros_robot_pose_topic = _get_env("ROS_ROBOT_POSE_TOPIC", "/vrpn_client_node/Fetch/pose")
-        self.ros_human_pose_topic = _get_env("ROS_HUMAN_POSE_TOPIC", "/vrpn_client_node/Human/pose")
+        self.ros_human_pose_topic = _get_env("ROS_HUMAN_POSE_TOPIC", "/vrpn_client_node/RigidBody004/pose")
 
         # MQTT pose topics (outputs)
         self.mqtt_robot_pose_topic = _get_env("MQTT_ROBOT_POSE_TOPIC", "robot/pose/robot")
@@ -132,7 +132,7 @@ class RosMqttServer(object):
         # Control (MQTT -> ROS)
         self.mqtt_control_topic = _get_env("MQTT_CONTROL_TOPIC", "robot/cmd/robot")
         self.ros_cmd_vel_topic = _get_env("ROS_CMD_VEL_TOPIC", "/cmd_vel")
-        self.cmd_pub_hz = _to_float(_get_env("CMD_PUB_HZ", "3"), 3.0)
+        self.cmd_pub_hz = 100.0
         self.cmd_timeout_sec = _to_float(_get_env("CMD_TIMEOUT_SEC", "0.75"), 0.75)
 
         # State for last received command
@@ -141,8 +141,8 @@ class RosMqttServer(object):
         self._last_velocity = 0.0
         self._last_angular = 0.0
         
-        self.min_y = -2.
-        self.max_y = 2.0
+        self.min_y = -2.0
+        self.max_y = 3.2
         self.min_x = -1.0
         self.max_x = 1.0
         self.safety_stop = False
@@ -315,7 +315,7 @@ class RosMqttServer(object):
         self._mqtt.loop_start()
 
         # Publish /cmd_vel at desired rate
-        period = 1.0 / self.cmd_pub_hz if self.cmd_pub_hz > 0 else 1.0 / 3.0
+        period = 1.0 / self.cmd_pub_hz
         rospy.Timer(rospy.Duration(period), self._cmd_timer_cb)
         rospy.loginfo("Bridge started")
 
