@@ -14,10 +14,13 @@ def wrap_angle(a: float) -> float:
 
 
 def quat_to_yaw(q) -> float:
-    return math.atan2(
+    
+    yaw = math.atan2(
         2.0 * (q.w * q.z + q.x * q.y),
         1.0 - 2.0 * (q.y * q.y + q.z * q.z),
     )
+    
+    return yaw + math.pi/2
 
 
 class EKF5:
@@ -174,13 +177,21 @@ class EKFStackNode(Node):
         )
 
     def _on_h_pose(self, msg: PoseStamped):
+        new_x = -msg.pose.position.y
+        new_y = msg.pose.position.x
         p = msg.pose.position
+        p.x=new_x
+        p.y=new_y
         yaw = quat_to_yaw(msg.pose.orientation)
         self._z_h = np.array([p.x, p.y, yaw], dtype=np.float64)
         self._new_h = True
 
     def _on_r_pose(self, msg: PoseStamped):
+        new_x = -msg.pose.position.y
+        new_y = msg.pose.position.x
         p = msg.pose.position
+        p.x=new_x
+        p.y = new_y
         yaw = quat_to_yaw(msg.pose.orientation)
         self._z_r = np.array([p.x, p.y, yaw], dtype=np.float64)
         self._new_r = True

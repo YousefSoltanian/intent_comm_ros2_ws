@@ -141,10 +141,10 @@ class RosMqttServer(object):
         self._last_velocity = 0.0
         self._last_angular = 0.0
         
-        self.min_y = -1.0
-        self.max_y = 1.0
-        self.min_x = -2.0
-        self.max_x = 2.0
+        self.min_y = -2.
+        self.max_y = 2.0
+        self.min_x = -1.0
+        self.max_x = 1.0
         self.safety_stop = False
 
         # ROS pub/sub
@@ -224,7 +224,7 @@ class RosMqttServer(object):
                     print("type of ang: ", type(ang))
                     
             vel = saturate(vel, -1, 1)
-            ang = saturate(ang*-1, -1, 1)
+            ang = saturate(ang, -1, 1)
 
             with self._lock:
                 self._last_velocity = vel
@@ -243,15 +243,23 @@ class RosMqttServer(object):
             "t": _ros_time_to_float(msg.header.stamp),
             "frame_id": msg.header.frame_id or "",
             "position": {
-                "x": msg.pose.position.y,
-                "y": msg.pose.position.x,
+                "x": msg.pose.position.x,
+                "y": msg.pose.position.y,
                 "z": msg.pose.position.z,
             },
+            # "orientation": {
+            #     "x": 0,
+            #     "y": 0,
+            #     # "z": -msg.pose.orientation.z,
+            #     # "w":msg.pose.orientation.w,
+            #     "z": qz,
+            #     "w": qw
+            # },
             "orientation": {
-                "x": 0,
-                "y": 0,
-                "z": qz,
-                "w":qw,
+                "x": msg.pose.orientation.x,
+                "y": msg.pose.orientation.y,
+                "z": msg.pose.orientation.z,
+                "w": msg.pose.orientation.w
             },
         }
         
