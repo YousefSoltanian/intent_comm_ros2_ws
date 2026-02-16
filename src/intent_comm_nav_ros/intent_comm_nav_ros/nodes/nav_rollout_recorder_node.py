@@ -12,10 +12,15 @@ from std_msgs.msg import Bool, Float32, Float32MultiArray
 
 
 def _quat_to_yaw(q) -> float:
-    return math.atan2(
+    
+    yaw = math.atan2(
         2.0 * (q.w * q.z + q.x * q.y),
         1.0 - 2.0 * (q.y * q.y + q.z * q.z),
     )
+    
+    return yaw + math.pi/2
+
+
 
 
 def _twist_to_u(msg: Twist) -> np.ndarray:
@@ -389,6 +394,7 @@ class NavRolloutRecorderNode(Node):
         self._plot_controls(ts, CmdH, CmdR, UestH, UestR, UobsH, UobsR)
         self._plot_beliefs(ts, PtrueH, PtrueR)
         self._plot_estimated_and_observed_positions(ts, H, R, Pest)
+        self._plot_estimated_and_observed_yaw(ts, H, R, Pest)
         self._make_gif(ts, H, R)
 
 
@@ -405,6 +411,8 @@ class NavRolloutRecorderNode(Node):
             rclpy.shutdown()
         except Exception:
             pass
+        
+        
 
     def _plot_xy(self, H: np.ndarray, R: np.ndarray) -> None:
         import matplotlib.pyplot as plt
@@ -449,6 +457,24 @@ class NavRolloutRecorderNode(Node):
 
         fig.tight_layout()
         fig.savefig(f"{self.base}_estimated_and_observed_positions.png")
+        plt.close(fig)
+        
+    def _plot_estimated_and_observed_yaw(self, ts, H, R, p_est) -> None:
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(10, 7), dpi=160)
+
+        ax1 = fig.add_subplot(1, 1, 1)
+        ax1.plot(ts, H[:, 2], color="red", label="human mocap yaw")
+        ax1.plot(ts, R[:, 2], color="blue", label="robot mocap yaw")
+        ax1.plot(ts, p_est[:, 2], "--", color="red", label="human estimated yaw")
+        ax1.plot(ts, p_est[:, 5], "--", color="blue", label="robot estimated yaw")
+        ax1.grid(alpha=0.3)
+        ax1.set_xlabel("t [s]")
+        ax1.set_ylabel("yaw [radians]")
+        ax1.legend()
+
+        fig.tight_layout()
+        fig.savefig(f"{self.base}_estimated_and_observed_yaw.png")
         plt.close(fig)
 
     def _plot_controls(self, ts, CmdH, CmdR, UestH, UestR, UobsH, UobsR) -> None:

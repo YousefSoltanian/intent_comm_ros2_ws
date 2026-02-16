@@ -9,8 +9,11 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
 
 
+# def wrap_angle(a: float) -> float:
+#     return (a + math.pi) % (2 * math.pi) - math.pi
+
 def wrap_angle(a: float) -> float:
-    return (a + math.pi) % (2 * math.pi) - math.pi
+    return a
 
 
 def quat_to_yaw(q) -> float:

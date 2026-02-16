@@ -123,7 +123,7 @@ class RosMqttServer(object):
 
         # ROS pose topics (inputs)
         self.ros_robot_pose_topic = _get_env("ROS_ROBOT_POSE_TOPIC", "/vrpn_client_node/Fetch/pose")
-        self.ros_human_pose_topic = _get_env("ROS_HUMAN_POSE_TOPIC", "/vrpn_client_node/RigidBody004/pose")
+        self.ros_human_pose_topic = _get_env("ROS_HUMAN_POSE_TOPIC", "/vrpn_client_node/Human_6/pose")
 
         # MQTT pose topics (outputs)
         self.mqtt_robot_pose_topic = _get_env("MQTT_ROBOT_POSE_TOPIC", "robot/pose/robot")

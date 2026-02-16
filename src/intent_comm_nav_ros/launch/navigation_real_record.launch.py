@@ -11,8 +11,8 @@ import os
 def generate_launch_description():
     # CLI inputs allowed
     controller = LaunchConfiguration("controller")
-    trial_id = LaunchConfiguration("trial_id")
-    subject_name = LaunchConfiguration("subject_name")
+    # trial_id = LaunchConfiguration("trial_id")
+    # subject_name = LaunchConfiguration("subject_name")
     params_file = LaunchConfiguration("params_file")  # path to YAML on the container
 
     # default out_dir; will be combined with subject and trial for per-run folder
@@ -97,7 +97,7 @@ def generate_launch_description():
 
     recorder_params = {
         "controller": ParameterValue(controller, value_type=str),
-        "trial_id": ParameterValue(trial_id, value_type=int),
+        # "trial_id": ParameterValue(trial_id, value_type=int),
 
         # recorder config keys: file can override via params_file
         "out_dir": base_out_dir,
@@ -123,10 +123,7 @@ def generate_launch_description():
         executable="nav_rollout_recorder",
         name="nav_rollout_recorder",
         output="screen",
-        parameters=[params_file, recorder_params, {
-            "subject_name": ParameterValue(subject_name, value_type=str),
-            # trial_id already passed above
-        }],
+        parameters=[params_file, recorder_params],
     )
 
     shutdown_on_recorder_exit = RegisterEventHandler(
@@ -143,8 +140,8 @@ def generate_launch_description():
 
     return LaunchDescription([
         DeclareLaunchArgument("controller", default_value="npace"),
-        DeclareLaunchArgument("trial_id", default_value="0"),
-        DeclareLaunchArgument("subject_name", default_value="subject_0"),
+        # DeclareLaunchArgument("trial_id", default_value="0"),
+        # DeclareLaunchArgument("subject_name", default_value="subject_0"),
         DeclareLaunchArgument("params_file", default_value=os.path.join("/ws", "config", "experiment_params.yaml")),
 
         mqtt_bridge,
