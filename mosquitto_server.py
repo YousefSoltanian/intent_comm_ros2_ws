@@ -123,7 +123,7 @@ class RosMqttServer(object):
 
         # ROS pose topics (inputs)
         self.ros_robot_pose_topic = _get_env("ROS_ROBOT_POSE_TOPIC", "/vrpn_client_node/Fetch/pose")
-        self.ros_human_pose_topic = _get_env("ROS_HUMAN_POSE_TOPIC", "/vrpn_client_node/Human_6/pose")
+        self.ros_human_pose_topic = _get_env("ROS_HUMAN_POSE_TOPIC", "/vrpn_client_node/Human7/pose")
 
         # MQTT pose topics (outputs)
         self.mqtt_robot_pose_topic = _get_env("MQTT_ROBOT_POSE_TOPIC", "robot/pose/robot")
@@ -132,7 +132,7 @@ class RosMqttServer(object):
         # Control (MQTT -> ROS)
         self.mqtt_control_topic = _get_env("MQTT_CONTROL_TOPIC", "robot/cmd/robot")
         self.ros_cmd_vel_topic = _get_env("ROS_CMD_VEL_TOPIC", "/cmd_vel")
-        self.cmd_pub_hz = 100.0
+        self.cmd_pub_hz = 8.0
         self.cmd_timeout_sec = _to_float(_get_env("CMD_TIMEOUT_SEC", "0.75"), 0.75)
 
         # State for last received command
@@ -143,8 +143,8 @@ class RosMqttServer(object):
         
         self.min_y = -2.0
         self.max_y = 3.2
-        self.min_x = -1.0
-        self.max_x = 1.0
+        self.min_x = -1.5
+        self.max_x = 1.5
         self.safety_stop = False
 
         # ROS pub/sub
@@ -223,8 +223,8 @@ class RosMqttServer(object):
                     print(ang)
                     print("type of ang: ", type(ang))
                     
-            vel = saturate(vel, -1, 1)
-            ang = saturate(ang, -1, 1)
+            # vel = saturate(vel, -1, 1)
+            # ang = saturate(ang, -1, 1)
 
             with self._lock:
                 self._last_velocity = vel

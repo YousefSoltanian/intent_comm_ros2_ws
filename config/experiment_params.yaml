@@ -17,16 +17,16 @@ ekf_stack:
 
     p0_xy: 1.0
     p0_th: 1.0
-    p0_v: 2.0
-    p0_w: 2.0
+    p0_v: 1.0
+    p0_w: 1.0
 
     q_xy: 1e-6
     q_th: 1e-6
     q_v: 1e-4
-    q_w: 1e-4
+    q_w: 1e-6
 
-    r_xy: 1e-4
-    r_th: 1e-3
+    r_xy: 1e-6
+    r_th: 1e-6
 
     freeze_vel_s: 0.5
     freeze_vel_cov: 1e-4
@@ -62,7 +62,7 @@ high_level_robot_runner:
       - 0
       - 1
 
-    theta_h_true: 1
+    theta_h_true: 0
     theta_r_true: 1
 
     goals_h_flat:
@@ -79,7 +79,7 @@ high_level_robot_runner:
     w_goal_pos: 100.0
     w_head: 10.108
     w_speed: 0.0
-    w_eff: 230.08
+    w_eff: 500.08
     v_nom: 0.9
 
     w_lat: 0.2
@@ -116,8 +116,8 @@ high_level_robot_runner:
       - 0.1
       - 0.1
 
-    gamma_teach: 100.0
-    effort_w_qmdp: 80.0
+    gamma_teach: 0.0
+    effort_w_qmdp: 0.0
 
     beta_action_like: 0.1
     sigma2_action_obs_flat:
@@ -158,18 +158,18 @@ nav_rollout_recorder:
       - 1
 
     theta_h_true: 0
-    theta_r_true: 0
+    theta_r_true: 1
 
     goals_h_flat:
-      - -1.6
-      - 0.9
-      - -1.6
-      - -0.9
+      - -2.0
+      - 1.0
+      - -2.0
+      - -1.0
     goals_r_flat:
       - 1.6
-      - 0.9
+      - 1.0
       - 1.6
-      - -0.9
+      - -1.0
 
     subject_name: "yosef"
-    trial_id: 10
+    trial_id: 23
