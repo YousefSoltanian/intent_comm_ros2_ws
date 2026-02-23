@@ -149,13 +149,15 @@ class EKFStackNode(Node):
         P0 = np.diag([p0_xy, p0_xy, p0_th, p0_v, p0_w])
         Q = np.diag([q_xy, q_xy, q_th, q_v, q_w])
         R = np.diag([r_xy, r_xy, r_th])
+        
+        Qh = np.diag([q_xy, q_xy, q_th*1e-2, q_v, q_w*1e-4])
 
         self.freeze_vel_s = float(self.get_parameter("freeze_vel_s").value)
         self.freeze_vel_cov = float(self.get_parameter("freeze_vel_cov").value)
         self.max_v = float(self.get_parameter("max_v").value)
         self.max_w = float(self.get_parameter("max_w").value)
 
-        self.ekf_h = EKF5(P0=P0, Q=Q, R=R)
+        self.ekf_h = EKF5(P0=P0, Q=Qh, R=R)
         self.ekf_r = EKF5(P0=P0, Q=Q, R=R)
 
         self._z_h = None
