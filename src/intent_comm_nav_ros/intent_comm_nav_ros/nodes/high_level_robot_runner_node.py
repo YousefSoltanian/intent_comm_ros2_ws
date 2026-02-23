@@ -97,6 +97,7 @@ class HighLevelRobotRunnerNode(Node):
         self.gamma_teach = float(self.declare_parameter("gamma_teach", 0.0).value)
         self.effort_w_qmdp = float(self.declare_parameter("effort_w_qmdp", 0.0).value)
         self.obs_smoothing_alpha = float(self.declare_parameter("obs_smoothing_alpha", 1.0).value)
+        self.belief_warmup_steps = int(self.declare_parameter("belief_warmup_steps", 0).value)
 
         # Blame-Me params
         self.beta_action_like = float(self.declare_parameter("beta_action_like", 0.1).value)
@@ -155,6 +156,7 @@ class HighLevelRobotRunnerNode(Node):
                 effort_w_qmdp=self.effort_w_qmdp,
                 sigma2_action_obs=self.sigma2_action_obs,
                 obs_smoothing_alpha=self.obs_smoothing_alpha,
+                belief_warmup_steps=self.belief_warmup_steps,
                 beta=self.beta_r,
             )
 

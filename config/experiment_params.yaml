@@ -97,9 +97,9 @@ high_level_robot_runner:
 
     max_iter: 25
     beta_h: 1.1
-    beta_r: 1.1
+    beta_r: 0.1
     beta_state: 1.1
-    rho_forget: 0.0
+    rho_forget: 0.05
 
     sigma2_state_human_flat:
       - 0.1
@@ -119,11 +119,12 @@ high_level_robot_runner:
     gamma_teach: 1000.0
     effort_w_qmdp: 0.0
     obs_smoothing_alpha: 0.3
+    belief_warmup_steps: 6
 
     beta_action_like: 1.1
     sigma2_action_obs_flat:
-      - 0.00001
-      - 0.00001
+      - 1.0
+      - 1.0
 
     topic_x_hat: "/hl/x_hat"
     topic_h_u_obs: "/hl/human/u_obs"

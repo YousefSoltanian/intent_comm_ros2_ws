@@ -199,6 +199,8 @@ class NavigationNPACEInfluence:
         # EMA smoothing for observed human action before belief update
         # 1.0 = fully instantaneous, 0.2 = slow trend-following
         obs_smoothing_alpha: float = 1.0,
+        # number of HL ticks to hold belief at uniform while EMA warms up
+        belief_warmup_steps: int = 0,
         max_iter: int = 25,
         verbose: bool = False,
         beta: float = 1.0,
@@ -208,6 +210,8 @@ class NavigationNPACEInfluence:
         self._sigma2_action_obs = np.array(sigma2_action_obs, dtype=float)
         self._obs_alpha = float(np.clip(obs_smoothing_alpha, 0.0, 1.0))
         self._u1_ema: Optional[np.ndarray] = None   # EMA of observed human action
+        self._belief_warmup_steps = int(belief_warmup_steps)
+        self._belief_tick = 0
         # intents & indices
         self._intents = tuple(int(i) for i in intents)
         self._idx_of  = {th: i for i, th in enumerate(self._intents)}
@@ -313,8 +317,9 @@ class NavigationNPACEInfluence:
             self._u1_ema = a1_raw.copy()
         else:
             self._u1_ema = self._obs_alpha * a1_raw + (1.0 - self._obs_alpha) * self._u1_ema
+        self._belief_tick += 1
 
-        if self._pred_ctrl is not None:
+        if self._pred_ctrl is not None and self._belief_tick > self._belief_warmup_steps:
             mu_arr   = jnp.asarray(self._pred_ctrl["mu_u1"])    # (nH,2)
             Prec_arr = jnp.asarray(self._pred_ctrl["Prec_u1"])  # (nH,2,2)
             u_obs = jnp.asarray(self._u1_ema, dtype=jnp.float32).reshape(2,)
