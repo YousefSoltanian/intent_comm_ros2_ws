@@ -152,6 +152,7 @@ class HighLevelRobotRunnerNode(Node):
                 max_iter=self.max_iter, verbose=False,
                 gamma_teach=self.gamma_teach,
                 effort_w_qmdp=self.effort_w_qmdp,
+                sigma2_action_obs=self.sigma2_action_obs,
                 beta=self.beta_r,
             )
 

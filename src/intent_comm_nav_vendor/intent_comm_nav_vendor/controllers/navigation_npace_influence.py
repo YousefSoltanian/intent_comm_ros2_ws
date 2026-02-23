@@ -193,14 +193,14 @@ class NavigationNPACEInfluence:
         # teaching strength
         gamma_teach: float = 0.0,
         # optional extra Q-MDP effort ridge (2λ I) like intersection’s effort_w (set 0 by default)
-        effort_w_qmdp: float = 0.0,
-        max_iter: int = 25,
+        effort_w_qmdp: float = 0.0,        # action observation noise (diagonal variances) for the belief update likelihood
+        sigma2_action_obs: Tuple[float, float] = (1e-2, 1e-2),        max_iter: int = 25,
         verbose: bool = False,
         beta: float = 1.0,
     ):
         
         self.beta    = float(beta)
-        self._sigma2_action_obs = np.array([1e-2, 1e-2], dtype=float)
+        self._sigma2_action_obs = np.array(sigma2_action_obs, dtype=float)
         # intents & indices
         self._intents = tuple(int(i) for i in intents)
         self._idx_of  = {th: i for i, th in enumerate(self._intents)}
@@ -432,12 +432,10 @@ class NavigationNPACEInfluence:
             if self._effort_w_qmdp > 0.0:
                 S1_true = S1_true + 2.0 * self._effort_w_qmdp * np.eye(2)
             Prec_policy  = self.beta * _spd_guard(S1_true, 1e-9)
-            Sigma_sens  = np.diag(self._sigma2_action_obs)
-            Sigma_policy = np.linalg.inv(Prec_policy)  # or pinv]
+            Sigma_sens   = np.diag(self._sigma2_action_obs)*0.0
+            Sigma_policy = np.linalg.inv(Prec_policy)
             Sigma_total  = Sigma_policy + Sigma_sens
-            Prec_total   = np.linalg.inv(Sigma_total)  # or pinv
-            #Prec_u1[ih, :, :] = self.beta*_spd_guard(S1_true, 1e-9)   # Σ^{-1}
-            Prec_u1[ih, :, :] = self.beta*_spd_guard(Prec_total, 1e-9)   # Σ^{-1}
+            Prec_u1[ih, :, :] = _spd_guard(np.linalg.inv(Sigma_total), 1e-9)
 
         self._pred_ctrl = {"mu_u1": mu_u1, "Prec_u1": Prec_u1}
 
