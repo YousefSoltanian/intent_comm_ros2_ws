@@ -446,7 +446,7 @@ class NavigationNPACEInfluence:
             if self._effort_w_qmdp > 0.0:
                 S1_true = S1_true + 2.0 * self._effort_w_qmdp * np.eye(2)
             Prec_policy  = self.beta * _spd_guard(S1_true, 1e-9)
-            Sigma_sens   = np.diag(self._sigma2_action_obs)*0.0
+            Sigma_sens   = np.diag(self._sigma2_action_obs)
             Sigma_policy = np.linalg.inv(Prec_policy)
             Sigma_total  = Sigma_policy + Sigma_sens
             Prec_u1[ih, :, :] = _spd_guard(np.linalg.inv(Sigma_total), 1e-9)
