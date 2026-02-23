@@ -193,14 +193,21 @@ class NavigationNPACEInfluence:
         # teaching strength
         gamma_teach: float = 0.0,
         # optional extra Q-MDP effort ridge (2λ I) like intersection’s effort_w (set 0 by default)
-        effort_w_qmdp: float = 0.0,        # action observation noise (diagonal variances) for the belief update likelihood
-        sigma2_action_obs: Tuple[float, float] = (1e-2, 1e-2),        max_iter: int = 25,
+        effort_w_qmdp: float = 0.0,
+        # action observation noise (diagonal variances) for the belief update likelihood
+        sigma2_action_obs: Tuple[float, float] = (1e-2, 1e-2),
+        # EMA smoothing for observed human action before belief update
+        # 1.0 = fully instantaneous, 0.2 = slow trend-following
+        obs_smoothing_alpha: float = 1.0,
+        max_iter: int = 25,
         verbose: bool = False,
         beta: float = 1.0,
     ):
         
         self.beta    = float(beta)
         self._sigma2_action_obs = np.array(sigma2_action_obs, dtype=float)
+        self._obs_alpha = float(np.clip(obs_smoothing_alpha, 0.0, 1.0))
+        self._u1_ema: Optional[np.ndarray] = None   # EMA of observed human action
         # intents & indices
         self._intents = tuple(int(i) for i in intents)
         self._idx_of  = {th: i for i, th in enumerate(self._intents)}
@@ -300,10 +307,17 @@ class NavigationNPACEInfluence:
                 )
 
         # (B) Robot's Bayes over human θ_h using observed u1 (vector likelihood)
+        # Smooth the incoming observation with an EMA to capture trend not just instant
+        a1_raw = np.asarray(a1_observed, dtype=np.float64).reshape(2,)
+        if self._u1_ema is None:
+            self._u1_ema = a1_raw.copy()
+        else:
+            self._u1_ema = self._obs_alpha * a1_raw + (1.0 - self._obs_alpha) * self._u1_ema
+
         if self._pred_ctrl is not None:
             mu_arr   = jnp.asarray(self._pred_ctrl["mu_u1"])    # (nH,2)
             Prec_arr = jnp.asarray(self._pred_ctrl["Prec_u1"])  # (nH,2,2)
-            u_obs = jnp.asarray(a1_observed, dtype=jnp.float32).reshape(2,)
+            u_obs = jnp.asarray(self._u1_ema, dtype=jnp.float32).reshape(2,)
             log_like = jnp.array([_mv_loglike_prec(u_obs, mu_arr[ih], Prec_arr[ih]) for ih in range(nH)])
             prior_j  = jnp.asarray(self._b_h)
             post = jnp.log(prior_j) + log_like
