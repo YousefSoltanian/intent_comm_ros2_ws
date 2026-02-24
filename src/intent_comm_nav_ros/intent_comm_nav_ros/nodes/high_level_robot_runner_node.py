@@ -198,6 +198,9 @@ class HighLevelRobotRunnerNode(Node):
                 pass
             self._ready = True
             self.get_logger().info("Warmup: robot compute_action compiled OK.")
+            # Reset belief state dirtied by the dummy warmup call
+            if hasattr(self.robot, "reset_belief_state"):
+                self.robot.reset_belief_state()
         except Exception as e:
             self.get_logger().error(f"Warmup failed: {repr(e)}")
 

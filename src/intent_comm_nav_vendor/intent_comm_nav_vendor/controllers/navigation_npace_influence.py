@@ -271,6 +271,16 @@ class NavigationNPACEInfluence:
     def robot_belief_over_human(self) -> Dict[int, float]:
         return {self._th_of[ih]: float(self._b_h[ih]) for ih in range(len(self._intents))}
 
+    def reset_belief_state(self) -> None:
+        """Clear belief state dirtied by warmup/compile calls so real updates start fresh."""
+        nH = len(self._intents)
+        nR = len(self._intents)
+        self._b_h = np.ones(nH, dtype=np.float64) / nH
+        uni = np.ones(nR, dtype=np.float64) / nR
+        self._q_r = {ih: uni.copy() for ih in range(nH)}
+        self._pred_ctrl = None
+        self._x_cache   = None
+
     @property
     def modeled_human_beliefs(self) -> Dict[int, Dict[int, float]]:
         return { self._th_of[ih]: { self._th_of[ir]: float(self._q_r[ih][ir])
