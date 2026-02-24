@@ -119,7 +119,7 @@ high_level_robot_runner:
     gamma_teach: 1000.0
     effort_w_qmdp: 0.0
     obs_smoothing_alpha: 0.3
-    belief_warmup_steps: 6
+    belief_warmup_steps: 1
 
     beta_action_like: 1.1
     sigma2_action_obs_flat:
