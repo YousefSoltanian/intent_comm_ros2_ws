@@ -67,6 +67,7 @@ class NavigationNoisyRationalHuman:
         v_nom: float = 0.9,
         hall_y0: float = 0.0,
         hall_half_width: float = 2.41,
+        d_safe_wall: float = 0.25,
         r_safe_coll: float = 2.0,
         # control bounds
         v_lo: float = 0.0, v_hi: float = 1.0,
@@ -100,6 +101,7 @@ class NavigationNoisyRationalHuman:
             w_head=float(w_head), w_speed=float(w_speed), w_effort=float(w_effort),
             w_lat=float(w_lat), w_wall=float(w_wall), w_coll=float(w_coll),
             v_nom=float(v_nom), hall_y0=float(hall_y0), hall_half_width=float(hall_half_width),
+            d_safe_wall=float(d_safe_wall),
             r_safe_coll=float(r_safe_coll),
             # legacy effort scalar kept for the optional +2*effort_w*I note
             effort_w=float(effort_w),
@@ -147,6 +149,7 @@ class NavigationNoisyRationalHuman:
                 w_goal_xy=p["w_goal_xy"], w_head=p["w_head"], w_speed=p["w_speed"],
                 w_effort=p["w_effort"], w_lat=p["w_lat"], w_wall=p["w_wall"], w_coll=p["w_coll"],
                 v_nom=p["v_nom"], hall_y0=p["hall_y0"], hall_half_width=p["hall_half_width"],
+                d_safe_wall=p["d_safe_wall"],
                 r_safe_coll=p["r_safe_coll"],
                 # bounds
                 v_lo=p["v_lo"], v_hi=p["v_hi"], w_lo=p["w_lo"], w_hi=p["w_hi"],

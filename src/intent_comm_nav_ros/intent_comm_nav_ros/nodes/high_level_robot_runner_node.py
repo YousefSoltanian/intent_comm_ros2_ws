@@ -75,6 +75,7 @@ class HighLevelRobotRunnerNode(Node):
 
         self.hall_y0         = float(self.declare_parameter("hall_y0", 0.0).value)
         self.hall_half_width = float(self.declare_parameter("hall_half_width", 2.41).value)
+        self.d_safe_wall     = float(self.declare_parameter("d_safe_wall", 0.25).value)
 
         self.v_lo = float(self.declare_parameter("v_lo", 0.0).value)
         self.v_hi = float(self.declare_parameter("v_hi", 1.2).value)
@@ -128,6 +129,7 @@ class HighLevelRobotRunnerNode(Node):
                     w_head=self.w_head, w_speed=self.w_speed, w_effort=self.w_eff,
                     w_lat=self.w_lat, w_wall=self.w_wall, w_coll=self.w_coll,
                     v_nom=self.v_nom, hall_y0=self.hall_y0, hall_half_width=self.hall_half_width,
+                    d_safe_wall=self.d_safe_wall,
                     r_safe_coll=self.r_safe_coll,
                     v_lo=self.v_lo, v_hi=self.v_hi, w_lo=self.w_lo, w_hi=self.w_hi,
                     max_iter=self.max_iter, verbose=False,
@@ -147,6 +149,7 @@ class HighLevelRobotRunnerNode(Node):
                 w_head=self.w_head, w_speed=self.w_speed, w_effort=self.w_eff,
                 w_lat=self.w_lat, w_wall=self.w_wall, w_coll=self.w_coll,
                 v_nom=self.v_nom, hall_y0=self.hall_y0, hall_half_width=self.hall_half_width,
+                d_safe_wall=self.d_safe_wall,
                 r_safe_coll=self.r_safe_coll,
                 v_lo=self.v_lo, v_hi=self.v_hi, w_lo=self.w_lo, w_hi=self.w_hi,
                 beta_state=self.beta_state, rho_forget=self.rho_forget,

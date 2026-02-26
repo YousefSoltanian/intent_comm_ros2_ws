@@ -100,6 +100,7 @@ high_level_robot_runner:
 
     hall_y0: 0.0
     hall_half_width: 1.8
+    d_safe_wall: 0.25
 
     v_lo: 0.0
     v_hi: 1.0
