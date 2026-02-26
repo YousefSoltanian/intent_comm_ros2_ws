@@ -7,8 +7,12 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 import os
+import random
 
 def generate_launch_description():
+    # Randomly assign robot intent (0 or 1) once per run
+    theta_r_true = random.randint(0, 1)
+
     # CLI inputs allowed
     controller = LaunchConfiguration("controller")
     # trial_id = LaunchConfiguration("trial_id")
@@ -39,6 +43,7 @@ def generate_launch_description():
                 "mqtt_reconnect_max_delay": 60,
                 "ros_topic_human": MOCAP_H_TOPIC,
                 "ros_topic_robot": MOCAP_R_TOPIC,
+                "theta_r_true": theta_r_true,
             },
         ],
     )
@@ -56,6 +61,7 @@ def generate_launch_description():
                 "topic_x_hat": "/ekf/stacked_state",
                 "topic_h_u_est": "/ekf/human/u_est",
                 "topic_r_u_est": "/ekf/robot/u_est",
+                "theta_r_true": theta_r_true,
             },
         ],
     )
@@ -75,6 +81,7 @@ def generate_launch_description():
                 "x_hat_prev_topic": "/hl/x_hat_prev",
                 "human_u_obs_topic": "/hl/human/u_obs",
                 "robot_u_obs_topic": "/hl/robot/u_obs",
+                "theta_r_true": theta_r_true,
             },
         ],
     )
@@ -85,6 +92,7 @@ def generate_launch_description():
         "topic_h_u_obs": "/hl/human/u_obs",
         "topic_r_cmd": "/robot/cmd_vel",
         "max_runtime_s": DURATION_S,
+        "theta_r_true": theta_r_true,
     }
 
     high_level_runner = Node(
@@ -116,6 +124,7 @@ def generate_launch_description():
         "topic_u_obs_r": "/hl/robot/u_obs",
         "topic_belief_h": "/hl/beliefs/human_about_robot",
         "topic_belief_r": "/hl/beliefs/robot_about_human",
+        "theta_r_true": theta_r_true,
     }
 
     recorder = Node(
