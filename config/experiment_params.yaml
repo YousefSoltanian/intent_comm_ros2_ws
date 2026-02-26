@@ -59,7 +59,7 @@ high_level_bridge:
 
 high_level_robot_runner:
   ros__parameters:
-    dt_hl: 0.5
+    dt_hl: 0.25
     horizon: 10
 
     intents_h:
@@ -92,14 +92,14 @@ high_level_robot_runner:
 
     w_lat: 1.2
     w_lat: 1.2
-    w_wall: 400.0
+    w_wall: 700.0
     w_coll: 400.0
     r_safe_coll: 2.0
     w_coll: 400.0
     r_safe_coll: 2.0
 
     hall_y0: 0.0
-    hall_half_width: 2.41
+    hall_half_width: 1.8
 
     v_lo: 0.0
     v_hi: 1.0
@@ -188,4 +188,4 @@ nav_rollout_recorder:
       - -1.0
 
     subject_name: "gamma0"
-    trial_id: 0
+    trial_id: 5
