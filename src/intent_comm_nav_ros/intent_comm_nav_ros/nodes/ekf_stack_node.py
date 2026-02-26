@@ -150,7 +150,7 @@ class EKFStackNode(Node):
         Q = np.diag([q_xy, q_xy, q_th, q_v, q_w])
         R = np.diag([r_xy, r_xy, r_th])
         
-        Qh = np.diag([q_xy, q_xy, q_th*1e-2, q_v, q_w*1e-4])
+        Qh = np.diag([q_xy, q_xy, q_th*1e-4, q_v, q_w*1e-4])
 
         self.freeze_vel_s = float(self.get_parameter("freeze_vel_s").value)
         self.freeze_vel_cov = float(self.get_parameter("freeze_vel_cov").value)
