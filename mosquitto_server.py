@@ -142,9 +142,9 @@ class RosMqttServer(object):
         self._last_angular = 0.0
         
         self.min_y = -2.0
-        self.max_y = 3.2
-        self.min_x = -1.5
-        self.max_x = 1.5
+        self.max_y = 3.7
+        self.min_x = -1.8
+        self.max_x = 1.8
         self.safety_stop = False
 
         # ROS pub/sub
