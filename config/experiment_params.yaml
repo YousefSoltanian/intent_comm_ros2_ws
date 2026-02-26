@@ -76,7 +76,7 @@ high_level_robot_runner:
       - 1.6
       - -1.0
 
-    w_goal_pos: 100.0
+    w_goal_pos: 500.0
     w_head: 100.108
     w_speed: 0.0
     w_eff: 100.08
@@ -96,35 +96,34 @@ high_level_robot_runner:
     w_hi: 0.3
 
     max_iter: 25
-    beta_h: 1.1
-    beta_r: 0.1
-    beta_state: 1.1
-    rho_forget: 0.05
+    beta_h: 1.0
+    beta_r: 1.0
+    beta_state: 1.0
+    rho_forget: 0.0
 
     sigma2_state_human_flat:
-      - 0.1
-      - 0.1
-      - 0.1
-      - 0.1
-      - 0.1
-      - 0.1
+      - 1.1
+      - 1.1
+      - 1.1
+      - 1.1
+      - 1.1
+      - 1.1
     sigma2_state_robot_flat:
-      - 0.1
-      - 0.1
-      - 0.1
-      - 0.1
-      - 0.1
-      - 0.1
+      - 1.1
+      - 1.1
+      - 1.1
+      - 1.1
+      - 1.1
+      - 1.1
 
-    gamma_teach: 1000.0
+    gamma_teach: 0.0
     effort_w_qmdp: 0.0
     obs_smoothing_alpha: 0.3
-    belief_warmup_steps: 1
 
-    beta_action_like: 1.1
+    beta_action_like: 1.0
     sigma2_action_obs_flat:
-      - 1.0
-      - 1.0
+      - 0.05
+      - 0.05
 
     topic_x_hat: "/hl/x_hat"
     topic_h_u_obs: "/hl/human/u_obs"
@@ -173,5 +172,5 @@ nav_rollout_recorder:
       - 1.6
       - -1.0
 
-    subject_name: "yosef"
-    trial_id: 25
+    subject_name: "gamma0"
+    trial_id: 0
