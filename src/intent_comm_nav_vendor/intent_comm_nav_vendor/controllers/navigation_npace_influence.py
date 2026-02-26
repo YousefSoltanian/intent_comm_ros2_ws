@@ -73,6 +73,7 @@ class _Solver2P_NPACE_Nav:
         v_nom: float,
         hall_y0: float,
         hall_half_width: float,
+        d_safe_wall: float,
         r_safe_coll: float,
         # ctrl limits
         v_lo: float, v_hi: float, w_lo: float, w_hi: float,
@@ -96,6 +97,7 @@ class _Solver2P_NPACE_Nav:
                 w_goal_xy=w_goal_xy, w_head=w_head, w_speed=w_speed,
                 w_effort=w_effort, w_lat=w_lat, w_wall=w_wall, w_coll=w_coll,
                 hall_y0=hall_y0, hall_half_width=hall_half_width,
+                d_safe_wall=d_safe_wall,
                 r_safe_coll=r_safe_coll, v_nom=v_nom
             ),
             arg="x", weight=1.0
@@ -110,6 +112,7 @@ class _Solver2P_NPACE_Nav:
                 w_goal_xy=w_goal_xy, w_head=w_head, w_speed=w_speed,
                 w_effort=w_effort, w_lat=w_lat, w_wall=w_wall, w_coll=w_coll,
                 hall_y0=hall_y0, hall_half_width=hall_half_width,
+                d_safe_wall=d_safe_wall,
                 r_safe_coll=r_safe_coll, v_nom=v_nom
             ),
             arg="x", weight=1.0
@@ -179,6 +182,7 @@ class NavigationNPACEInfluence:
         v_nom: float = 0.9,
         hall_y0: float = 0.0,
         hall_half_width: float = 2.41,
+        d_safe_wall: float = 0.25,
         r_safe_coll: float = 2.0,
         # ctrl limits
         v_lo: float = 0.0, v_hi: float = 1.0,
@@ -240,7 +244,8 @@ class NavigationNPACEInfluence:
             w_head=float(w_head), w_speed=float(w_speed), w_effort=float(w_effort),
             w_lat=float(w_lat), w_wall=float(w_wall), w_coll=float(w_coll),
             v_nom=float(v_nom), hall_y0=float(hall_y0),
-            hall_half_width=float(hall_half_width), r_safe_coll=float(r_safe_coll),
+            hall_half_width=float(hall_half_width), d_safe_wall=float(d_safe_wall),
+            r_safe_coll=float(r_safe_coll),
             v_lo=float(v_lo), v_hi=float(v_hi), w_lo=float(w_lo), w_hi=float(w_hi),
             max_iter=int(max_iter), verbose=bool(verbose),
         )
