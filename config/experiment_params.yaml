@@ -179,11 +179,6 @@ nav_rollout_recorder:
       - -1.5
       - 2.4
       - 0.0
-    goals_h_flat:
-      - -1.0
-      - -1.5
-      - -2.4
-      - -0.0
 
     subject_name: "exp3gamma10000"
     trial_id: 14
