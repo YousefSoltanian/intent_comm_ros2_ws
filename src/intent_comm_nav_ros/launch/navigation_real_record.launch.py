@@ -11,7 +11,8 @@ import random
 
 def generate_launch_description():
     # Randomly assign robot intent (0 or 1) once per run
-    theta_r_true = random.randint(0, 1)
+    # theta_r_true = random.randint(0, 1)
+    # print("[LAUNCH FILE] True Robot Theta: " + str(theta_r_true))
 
     # CLI inputs allowed
     controller = LaunchConfiguration("controller")
@@ -43,7 +44,7 @@ def generate_launch_description():
                 "mqtt_reconnect_max_delay": 60,
                 "ros_topic_human": MOCAP_H_TOPIC,
                 "ros_topic_robot": MOCAP_R_TOPIC,
-                "theta_r_true": theta_r_true,
+                # "theta_r_true": theta_r_true,
             },
         ],
     )
@@ -61,7 +62,7 @@ def generate_launch_description():
                 "topic_x_hat": "/ekf/stacked_state",
                 "topic_h_u_est": "/ekf/human/u_est",
                 "topic_r_u_est": "/ekf/robot/u_est",
-                "theta_r_true": theta_r_true,
+                # "theta_r_true": theta_r_true,
             },
         ],
     )
@@ -81,7 +82,7 @@ def generate_launch_description():
                 "x_hat_prev_topic": "/hl/x_hat_prev",
                 "human_u_obs_topic": "/hl/human/u_obs",
                 "robot_u_obs_topic": "/hl/robot/u_obs",
-                "theta_r_true": theta_r_true,
+                # "theta_r_true": theta_r_true,
             },
         ],
     )
@@ -92,7 +93,7 @@ def generate_launch_description():
         "topic_h_u_obs": "/hl/human/u_obs",
         "topic_r_cmd": "/robot/cmd_vel",
         "max_runtime_s": DURATION_S,
-        "theta_r_true": theta_r_true,
+        # "theta_r_true": theta_r_true,
     }
 
     high_level_runner = Node(
