@@ -126,7 +126,6 @@ def generate_launch_description():
         "topic_belief_h": "/hl/beliefs/human_about_robot",
         "topic_belief_r": "/hl/beliefs/robot_about_human",
         "topic_intent_recognized": "/hl/intent_recognized",
-        "theta_r_true": theta_r_true,
     }
 
     recorder = Node(

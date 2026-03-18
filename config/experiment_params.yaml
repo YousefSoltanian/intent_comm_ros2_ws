@@ -69,8 +69,8 @@ high_level_robot_runner:
       - 0
       - 1
 
-    theta_h_true: 1
-    theta_r_true: 1
+    theta_h_true: &theta_h_true 1
+    theta_r_true: &theta_r_true 1
 
     goals_h_flat:
       - -2.0
@@ -127,7 +127,7 @@ high_level_robot_runner:
       - 1.1
       - 1.1
 
-    gamma_teach: 0.0
+    gamma_teach: &gamma_teach 0.0
     effort_w_qmdp: 0.0
     obs_smoothing_alpha: 0.3
     obs_smoothing_alpha: 0.3
@@ -144,6 +144,7 @@ high_level_robot_runner:
 
 nav_rollout_recorder:
   ros__parameters:
+    gamma_teach: *gamma_teach
     duration_s: 10.0
     plot_dt: 0.02
     gif_stride: 10
@@ -170,8 +171,8 @@ nav_rollout_recorder:
       - 0
       - 1
 
-    theta_h_true: 1
-    theta_r_true: 1
+    theta_h_true: *theta_h_true
+    theta_r_true: *theta_r_true
 
     goals_h_flat:
       - -2.0

@@ -96,6 +96,14 @@ def _safe_intent_index(intents: List[int], theta_true: int) -> int:
         return int(np.clip(idx, 0, max(0, len(intents) - 1)))
 
 
+def _gamma_label(gamma: float) -> str:
+    s = f"{float(gamma):.6f}".rstrip("0").rstrip(".")
+    if s in ("", "-0"):
+        s = "0"
+    s = s.replace("-", "m").replace(".", "p")
+    return f"gamma{s}"
+
+
 class NavRolloutRecorderNode(Node):
     def __init__(self):
         super().__init__("nav_rollout_recorder")
@@ -115,6 +123,8 @@ class NavRolloutRecorderNode(Node):
         self.intents_r = list(self.declare_parameter("intents_r", [0, 1]).value)
         self.theta_h_true = int(self.declare_parameter("theta_h_true", 0).value)
         self.theta_r_true = int(self.declare_parameter("theta_r_true", 0).value)
+        self.gamma_teach = float(self.declare_parameter("gamma_teach", 0.0).value)
+        self.gamma_label = _gamma_label(self.gamma_teach)
 
         out_dir = str(self.declare_parameter("out_dir", "").value).strip()
         if out_dir == "":
@@ -205,7 +215,7 @@ class NavRolloutRecorderNode(Node):
         subject = str(self.get_parameter('subject_name').value)
         out_dir = os.path.join(str(self.get_parameter('out_dir').value), subject, self.controller)
         os.makedirs(out_dir, exist_ok=True)
-        self.base = os.path.join(out_dir, f"{self.controller}_trial_{self.trial_id}")
+        self.base = os.path.join(out_dir, f"{self.gamma_label}_{self.controller}_trial_{self.trial_id}")
 
         # NEW: filenames depend ONLY on controller + trial_id
         # self.base = os.path.join(out_dir, f"{self.controller}_trial_{self.trial_id}")
@@ -214,7 +224,7 @@ class NavRolloutRecorderNode(Node):
         self.done_timer = None
         self.get_logger().info(
             f"[Recorder] controller={self.controller} trial_id={self.trial_id} duration={self.duration_s}s plot_dt={self.plot_dt:.3f}s "
-            f"gif_stride={self.gif_stride} out={out_dir}"
+            f"gif_stride={self.gif_stride} gamma_teach={self.gamma_teach:.6g} out={out_dir}"
         )
 
     def _t(self) -> float:
