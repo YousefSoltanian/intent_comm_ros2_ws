@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import json
+import socket
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -136,6 +137,24 @@ HTML_PAGE = """<!doctype html>
 """
 
 
+def _detect_lan_ip() -> str:
+  """Best-effort LAN IP discovery without external dependencies."""
+  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+  try:
+    sock.connect(("8.8.8.8", 80))
+    ip = sock.getsockname()[0]
+    if ip:
+      return str(ip)
+  except Exception:
+    pass
+  finally:
+    try:
+      sock.close()
+    except Exception:
+      pass
+  return "127.0.0.1"
+
+
 class _IntentHttpHandler(BaseHTTPRequestHandler):
     def __init__(self, *args, node=None, **kwargs):
         self._node = node
@@ -218,8 +237,19 @@ class WebIntentButtonNode(Node):
         self._server_thread = None
         self._start_http_server()
 
+        lan_ip = _detect_lan_ip()
+        if self.host == "0.0.0.0":
+          local_hint = f"http://localhost:{self.port}"
+          lan_hint = f"http://{lan_ip}:{self.port}"
+        else:
+          local_hint = f"http://{self.host}:{self.port}"
+          lan_hint = local_hint
+
         self.get_logger().info(
             f"[WebButton] serving at http://{self.host}:{self.port} topic={self.topic_intent_recognized}"
+        )
+        self.get_logger().info(
+          f"[WebButton] open on this machine: {local_hint} | open on phone (same LAN): {lan_hint}"
         )
 
     def _make_handler(self):
