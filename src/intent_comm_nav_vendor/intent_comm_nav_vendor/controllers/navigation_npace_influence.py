@@ -433,7 +433,8 @@ class NavigationNPACEInfluence:
             K_psd = (V * w) @ V.T 
             kappa_diag = np.diag(K_psd) + 1e-12                # strictly positive
             #g_teach_vec = kappa_diag * gap_vec *self._q_r[ir_true]     #
-            g_teach_vec = K_psd @ gap_vec *(1-self._q_r[ir_true])              # (2,)
+            # g_teach_vec = K_psd @ gap_vec *(1-self._q_r[ir_true])              # (2,)
+            g_teach_vec = K_psd @ gap_vec   
 
             # numerator bias for robot (affine):
             u2_nom_true = s.nom(pl=1)  # (2,)

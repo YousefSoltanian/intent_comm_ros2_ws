@@ -36,6 +36,7 @@ setup(
     	"nav_rollout_recorder = intent_comm_nav_ros.nodes.nav_rollout_recorder_node:main",
     	'high_level_robot_runner = intent_comm_nav_ros.nodes.high_level_robot_runner_node:main',
     	"mqtt_bridge = intent_comm_nav_ros.nodes.mqtt_bridge_node:main",
+    "web_intent_button = intent_comm_nav_ros.nodes.web_intent_button_node:main",
 
     ],
 },

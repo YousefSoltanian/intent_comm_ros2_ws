@@ -11,6 +11,7 @@ services:
     tty: true
     ports:
       - "1883:1883"
+      - "8000:8000"
       - "7400:7400/udp"
     environment:
       - DISPLAY=${DISPLAY}

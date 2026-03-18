@@ -124,6 +124,7 @@ def generate_launch_description():
         "topic_u_obs_r": "/hl/robot/u_obs",
         "topic_belief_h": "/hl/beliefs/human_about_robot",
         "topic_belief_r": "/hl/beliefs/robot_about_human",
+        "topic_intent_recognized": "/hl/intent_recognized",
         "theta_r_true": theta_r_true,
     }
 
@@ -133,6 +134,21 @@ def generate_launch_description():
         name="nav_rollout_recorder",
         output="screen",
         parameters=[params_file, recorder_params],
+    )
+
+    web_intent_button = Node(
+        package="intent_comm_nav_ros",
+        executable="web_intent_button",
+        name="web_intent_button",
+        output="screen",
+        parameters=[
+            params_file,
+            {
+                "topic_intent_recognized": "/hl/intent_recognized",
+                "host": "0.0.0.0",
+                "port": 8000,
+            },
+        ],
     )
 
     shutdown_on_recorder_exit = RegisterEventHandler(
@@ -157,6 +173,7 @@ def generate_launch_description():
         ekf_stack,
         high_level_bridge,
         high_level_runner,
+        web_intent_button,
         recorder,
         shutdown_on_recorder_exit,
         hard_shutdown

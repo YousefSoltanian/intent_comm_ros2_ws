@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import math
+import time
 from dataclasses import dataclass
 from typing import Tuple, List
 
@@ -141,6 +142,9 @@ class NavRolloutRecorderNode(Node):
         self.topic_belief_h = str(self.declare_parameter("topic_belief_h", "/hl/beliefs/human_about_robot").value)
         self.topic_belief_r = str(self.declare_parameter("topic_belief_r", "/hl/beliefs/robot_about_human").value)
         self.topic_ready   = str(self.declare_parameter("topic_ready", "/hl/ready").value)
+        self.topic_intent_recognized = str(
+            self.declare_parameter("topic_intent_recognized", "/hl/intent_recognized").value
+        )
         
         self.subject_name = str(self.declare_parameter("subject_name", "subject_0").value)
 
@@ -155,6 +159,10 @@ class NavRolloutRecorderNode(Node):
 
         self.t0 = self.get_clock().now().nanoseconds * 1e-9
         self._armed = False
+        self._recognition_pressed = False
+        self._recognition_t_press = float("nan")
+        self._recognition_wall_time_unix = float("nan")
+        self._recognition_source = "web_button"
 
         self.first_seen = {}
 
@@ -190,6 +198,7 @@ class NavRolloutRecorderNode(Node):
         self.create_subscription(Float32MultiArray, self.topic_belief_h, self._on_bel_h, 50)
         self.create_subscription(Float32MultiArray, self.topic_belief_r, self._on_bel_r, 50)
         self.create_subscription(Bool, self.topic_ready, self._on_ready, 10)
+        self.create_subscription(Bool, self.topic_intent_recognized, self._on_intent_recognized, 10)
 
         self.out_dir = out_dir
         
@@ -241,7 +250,27 @@ class NavRolloutRecorderNode(Node):
         if self.done_timer is None:
             self.done_timer = self.create_timer(self.duration_s, self._finish_once)
 
+        self._recognition_pressed = False
+        self._recognition_t_press = float("nan")
+        self._recognition_wall_time_unix = float("nan")
+
         self.get_logger().info("[Recorder] armed: /hl/ready=True, starting rollout timer.")
+
+    def _on_intent_recognized(self, msg: Bool) -> None:
+        if not self._armed or self._finished:
+            return
+        if self._recognition_pressed:
+            return
+        if not bool(getattr(msg, "data", False)):
+            return
+
+        self._recognition_pressed = True
+        self._recognition_t_press = float(max(0.0, self._t()))
+        self._recognition_wall_time_unix = float(time.time())
+        self._mark_first("intent_recognized")
+        self.get_logger().info(
+            f"[Recorder] intent recognized at t={self._recognition_t_press:.3f}s from arm."
+        )
 
     def _on_truth_h(self, msg: PoseStamped) -> None:
         self._mark_first("truth_h")
@@ -387,6 +416,10 @@ class NavRolloutRecorderNode(Node):
             theta_h_true=np.int32(self.theta_h_true),
             theta_r_true=np.int32(self.theta_r_true),
             goals_h=self.goals_h, goals_r=self.goals_r,
+            recognition_pressed=np.bool_(self._recognition_pressed),
+            recognition_t_press=np.float32(self._recognition_t_press),
+            recognition_wall_time_unix=np.float64(self._recognition_wall_time_unix),
+            recognition_source=np.array(self._recognition_source),
             first_seen=self.first_seen,
         )
 
