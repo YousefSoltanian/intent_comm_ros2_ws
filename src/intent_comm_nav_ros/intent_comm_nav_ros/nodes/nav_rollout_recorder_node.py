@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import math
-import time
 from dataclasses import dataclass
 from typing import Tuple, List
 
@@ -171,7 +170,6 @@ class NavRolloutRecorderNode(Node):
         self._armed = False
         self._recognition_pressed = False
         self._recognition_t_press = float("nan")
-        self._recognition_wall_time_unix = float("nan")
         self._recognition_source = "web_button"
 
         self.first_seen = {}
@@ -262,7 +260,6 @@ class NavRolloutRecorderNode(Node):
 
         self._recognition_pressed = False
         self._recognition_t_press = float("nan")
-        self._recognition_wall_time_unix = float("nan")
 
         self.get_logger().info("[Recorder] armed: /hl/ready=True, starting rollout timer.")
 
@@ -276,7 +273,6 @@ class NavRolloutRecorderNode(Node):
 
         self._recognition_pressed = True
         self._recognition_t_press = float(max(0.0, self._t()))
-        self._recognition_wall_time_unix = float(time.time())
         self._mark_first("intent_recognized")
         self.get_logger().info(
             f"[Recorder] intent recognized at t={self._recognition_t_press:.3f}s from arm."
@@ -428,7 +424,7 @@ class NavRolloutRecorderNode(Node):
             goals_h=self.goals_h, goals_r=self.goals_r,
             recognition_pressed=np.bool_(self._recognition_pressed),
             recognition_t_press=np.float32(self._recognition_t_press),
-            recognition_wall_time_unix=np.float64(self._recognition_wall_time_unix),
+            recognition_elapsed_s=np.float32(self._recognition_t_press),
             recognition_source=np.array(self._recognition_source),
             first_seen=self.first_seen,
         )

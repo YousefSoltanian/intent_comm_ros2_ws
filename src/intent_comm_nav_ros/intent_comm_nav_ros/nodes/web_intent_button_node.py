@@ -192,7 +192,8 @@ class _IntentHttpHandler(BaseHTTPRequestHandler):
                 {
                     "ok": True,
               "sent": bool(node.press_sent),
-              "t_unix": float(node.press_sent_unix) if node.press_sent_unix is not None else None,
+              "elapsed_s": float(node.press_elapsed_s) if node.press_elapsed_s is not None else None,
+              "armed": bool(node._armed),
                 }
             )
             return
@@ -220,16 +221,20 @@ class WebIntentButtonNode(Node):
         self.topic_intent_recognized = str(
             self.declare_parameter("topic_intent_recognized", "/hl/intent_recognized").value
         )
+        self.topic_ready = str(self.declare_parameter("topic_ready", "/hl/ready").value)
         self.host = str(self.declare_parameter("host", "0.0.0.0").value)
         port_value = self.declare_parameter("port", 8000).value
         self.port = int(port_value) if port_value is not None else 8000
 
         self.pub_intent = self.create_publisher(Bool, self.topic_intent_recognized, 10)
+        self.sub_ready = self.create_subscription(Bool, self.topic_ready, self._on_ready, 10)
 
         self._press_event = threading.Event()
         self._lock = threading.Lock()
+        self._armed = False
+        self._start_perf = None
         self.press_sent = False
-        self.press_sent_unix = None
+        self.press_elapsed_s = None
 
         self.create_timer(0.02, self._flush_press)
 
@@ -239,18 +244,30 @@ class WebIntentButtonNode(Node):
 
         lan_ip = _detect_lan_ip()
         if self.host == "0.0.0.0":
-          local_hint = f"http://localhost:{self.port}"
-          lan_hint = f"http://{lan_ip}:{self.port}"
+            local_hint = f"http://localhost:{self.port}"
+            lan_hint = f"http://{lan_ip}:{self.port}"
         else:
-          local_hint = f"http://{self.host}:{self.port}"
-          lan_hint = local_hint
+            local_hint = f"http://{self.host}:{self.port}"
+            lan_hint = local_hint
 
         self.get_logger().info(
             f"[WebButton] serving at http://{self.host}:{self.port} topic={self.topic_intent_recognized}"
         )
         self.get_logger().info(
-          f"[WebButton] open on this machine: {local_hint} | open on phone (same LAN): {lan_hint}"
+            f"[WebButton] open on this machine: {local_hint} | open on phone (same LAN): {lan_hint}"
         )
+
+    def _on_ready(self, msg: Bool) -> None:
+        if not bool(getattr(msg, "data", False)):
+            return
+        with self._lock:
+            if self._armed:
+                return
+            self._armed = True
+            self._start_perf = time.perf_counter()
+            self.press_sent = False
+            self.press_elapsed_s = None
+        self.get_logger().info("[WebButton] experiment armed from /hl/ready=True.")
 
     def _make_handler(self):
         node = self
@@ -286,11 +303,19 @@ class WebIntentButtonNode(Node):
 
             self.pub_intent.publish(Bool(data=True))
             self.press_sent = True
-            self.press_sent_unix = float(time.time())
+            if self._armed and self._start_perf is not None:
+                self.press_elapsed_s = float(max(0.0, time.perf_counter() - self._start_perf))
+            else:
+                self.press_elapsed_s = None
             self._press_event.clear()
-            self.get_logger().info(
-                f"[WebButton] intent press published at unix={self.press_sent_unix:.3f}"
-            )
+            if self.press_elapsed_s is not None:
+                self.get_logger().info(
+                    f"[WebButton] intent press published at t={self.press_elapsed_s:.3f}s from experiment start."
+                )
+            else:
+                self.get_logger().info(
+                    "[WebButton] intent press published before /hl/ready arm (elapsed unavailable)."
+                )
 
     def destroy_node(self):
         try:
