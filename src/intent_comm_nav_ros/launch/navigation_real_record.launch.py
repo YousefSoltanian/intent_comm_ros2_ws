@@ -8,6 +8,27 @@ from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 import os
 import random
+import yaml
+
+
+def _read_shared_experiment_values(params_path: str):
+    """Read single-source truth for theta/gamma from runner params in YAML."""
+    defaults = {
+        "theta_h_true": 0,
+        "theta_r_true": 0,
+        "gamma_teach": 0.0,
+    }
+    try:
+        with open(params_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        runner = data.get("high_level_robot_runner", {}).get("ros__parameters", {})
+        return {
+            "theta_h_true": int(runner.get("theta_h_true", defaults["theta_h_true"])),
+            "theta_r_true": int(runner.get("theta_r_true", defaults["theta_r_true"])),
+            "gamma_teach": float(runner.get("gamma_teach", defaults["gamma_teach"])),
+        }
+    except Exception:
+        return defaults
 
 def generate_launch_description():
     # Randomly assign robot intent (0 or 1) once per run
@@ -18,7 +39,9 @@ def generate_launch_description():
     controller = LaunchConfiguration("controller")
     # trial_id = LaunchConfiguration("trial_id")
     # subject_name = LaunchConfiguration("subject_name")
+    params_file_default = os.path.join("/ws", "config", "experiment_params.yaml")
     params_file = LaunchConfiguration("params_file")  # path to YAML on the container
+    shared_vals = _read_shared_experiment_values(params_file_default)
 
     # default out_dir; will be combined with subject and trial for per-run folder
     base_out_dir = os.path.join(os.getcwd(), "rollouts")
@@ -93,6 +116,9 @@ def generate_launch_description():
         "topic_h_u_obs": "/hl/human/u_obs",
         "topic_r_cmd": "/robot/cmd_vel",
         "max_runtime_s": DURATION_S,
+        "theta_h_true": shared_vals["theta_h_true"],
+        "theta_r_true": shared_vals["theta_r_true"],
+        "gamma_teach": shared_vals["gamma_teach"],
         # "theta_r_true": theta_r_true,
     }
 
@@ -126,6 +152,9 @@ def generate_launch_description():
         "topic_belief_h": "/hl/beliefs/human_about_robot",
         "topic_belief_r": "/hl/beliefs/robot_about_human",
         "topic_intent_recognized": "/hl/intent_recognized",
+        "theta_h_true": shared_vals["theta_h_true"],
+        "theta_r_true": shared_vals["theta_r_true"],
+        "gamma_teach": shared_vals["gamma_teach"],
     }
 
     recorder = Node(
@@ -167,7 +196,7 @@ def generate_launch_description():
         DeclareLaunchArgument("controller", default_value="npace"),
         # DeclareLaunchArgument("trial_id", default_value="0"),
         # DeclareLaunchArgument("subject_name", default_value="subject_0"),
-        DeclareLaunchArgument("params_file", default_value=os.path.join("/ws", "config", "experiment_params.yaml")),
+        DeclareLaunchArgument("params_file", default_value=params_file_default),
 
         mqtt_bridge,
         ekf_stack,
