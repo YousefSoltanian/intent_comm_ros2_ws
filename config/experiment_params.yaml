@@ -69,33 +69,33 @@ high_level_robot_runner:
       - 0
       - 1
 
-    theta_h_true: 1
-    theta_r_true: 1
+    theta_h_true: 0
+    theta_r_true: 0
 
-    goals_h_flat:
-      - -2.0
-      - 1.0
-      - -2.0
-      - -1.0
     goals_r_flat:
-      - 1.6
       - 1.0
-      - 1.6
+      - -1.5
+      - 2.4
+      - 0.0
+    goals_h_flat:
       - -1.0
+      - -1.5
+      - -2.4
+      - -0.0
 
-    w_goal_pos: 100.0
+    w_goal_pos: 200.0
     w_head: 100.108
     w_speed: 0.0
-    w_eff: 200.08
+    w_eff: 400.08
     v_nom: 0.9
 
     w_lat: 1.2
-    w_wall: 200.0
+    w_wall: 500.0
     w_coll: 500.0
     r_safe_coll: 2.5
 
     hall_y0: 0.0
-    hall_half_width: 1.8
+    hall_half_width: 1.5
     d_safe_wall: 0.4
 
     v_lo: 0.0
@@ -127,9 +127,8 @@ high_level_robot_runner:
       - 1.1
       - 1.1
 
-    gamma_teach: 0.0
+    gamma_teach: 10000.0
     effort_w_qmdp: 0.0
-    obs_smoothing_alpha: 0.3
     obs_smoothing_alpha: 0.3
 
     beta_action_like: 1.0
@@ -170,19 +169,19 @@ nav_rollout_recorder:
       - 0
       - 1
 
-    theta_h_true: 1
-    theta_r_true: 1
+    theta_h_true: 0
+    theta_r_true: 0
 
-    goals_h_flat:
-      - -2.0
-      - 1.0
-      - -2.0
-      - -1.0
     goals_r_flat:
-      - 1.6
       - 1.0
-      - 1.6
+      - -1.5
+      - 2.4
+      - 0.0
+    goals_h_flat:
       - -1.0
+      - -1.5
+      - -2.4
+      - -0.0
 
-    subject_name: "gamma0"
-    trial_id: 2
+    subject_name: "exp3gamma10000"
+    trial_id: 14
